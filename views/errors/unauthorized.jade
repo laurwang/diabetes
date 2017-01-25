@@ -1,0 +1,23 @@
+extends ../layouts/default
+
+block content
+    .container
+        .row
+            .col-sm-6.col-sm-offset-3.text-center
+                .well
+                    h2
+                        i.fa.fa-times-circle-o.fa-5x.danger
+                        hr
+                        |  Restricted Access
+
+                        p.lead
+                            | You are not authorized to view this page. Please check with the
+                            | site administrator for help.
+                        
+                    a(href="#", onClick="history.go(-1); return false;").btn
+                        i.fa.fa-caret-left.muted
+                        |  Go Back
+                    if (user)
+                        a(href="/logout").btn
+                            i.fa.fa-sign-out.muted
+                            |  Logout

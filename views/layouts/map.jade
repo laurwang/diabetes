@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+  include ../components/head
+  block head
+
+  body
+    include ../components/nav
+
+    div(style='margin-top:-20px')
+      block content
+
+      include ../components/foot
+
+  block foot

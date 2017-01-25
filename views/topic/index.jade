@@ -1,0 +1,114 @@
+extends ../layouts/default
+
+block content
+  .container
+    .row
+      .col-sm-12
+        h1 Topics
+        hr
+        div 
+    .row
+      .col-sm-4.col-sm-offset-8
+        span.pull-right
+          a.btn.btn-info(href="/topics/add") Add a Topic
+    hr
+    .row
+      .col-sm-5
+        h4 Available Topics
+    table#table
+      thead
+        tr
+          th Name
+          th Description
+          th Application Type
+          th Resource Name
+          th Resource Type
+          th Event
+          th &nbsp;
+      tbody
+        each topic in topics
+          tr
+            td
+              span= topic.name
+            td
+              span= topic.description
+            td
+              b
+                span= topic.applicationType.prefix
+              span= topic.applicationType.field
+            td
+              b
+                span= topic.resourceName.prefix
+              span= topic.resourceName.field
+            td
+              b
+                span= topic.resourceType.prefix
+              span= topic.resourceType.field
+            td
+              b
+                span= topic.event.prefix
+              span= topic.event.field
+            td
+              a(style='padding-right:10px;' href='/topics/edit/' + topic.id)
+                  i.fa.fa-pencil-square-o.fa-lg
+                  span  Edit
+              a(href='/topics/delete/' + topic.id)
+                i.fa.fa-trash-o.fa-lg
+                span  Delete
+    link(rel='stylesheet', href='//cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css', type='text/css')
+    link(rel='stylesheet', href='//cdn.datatables.net/buttons/1.1.0/css/buttons.dataTables.min.css', type='text/css')
+    script(src='//cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js')
+    script(src='//cdn.datatables.net/buttons/1.1.0/js/dataTables.buttons.min.js')
+    script(src='//cdn.datatables.net/buttons/1.1.0/js/buttons.html5.min.js')
+    script.
+      $(document).ready(function() {
+        $('#table').DataTable({
+          bLengthChange: false,
+          order: [[ 2, 'asc' ], [3, 'asc'], [4, 'asc'], [5, 'asc']],
+          scrollY: '400px',
+          scrollCollapse: true,
+          paging: false,
+          columnDefs: [
+            { width: '14%', targets: [0, 1, 2, 3, 4, 5, 6] }
+          ],
+          //dom: 'Bfrtip',
+          //buttons: [
+          //  'csvHtml5',
+          //],
+          columns: [{
+            className: 'dt-center',
+          }, {
+            className: 'dt-center',
+          }, {
+            className: 'dt-center',
+            searchable: false,
+          }, {
+            className: 'dt-center',
+            searchable: false,
+          }, {
+            className: 'dt-center',
+            searchable: false,
+          }, {
+            className: 'dt-center',
+            searchable: false,
+          }, {
+            className: 'dt-center',
+            orderable: false,
+          } ],
+          initComplete: function(settings) {
+            $('#table thead th[title]').tooltip( {
+              container: 'body',
+            });
+          },
+        });
+      });
+
+    style.
+      .itemTitle {
+        width: 300px;
+      }
+
+  //script.
+  //  $('.more-details').click(function() {
+  //    $(this).parents('.event-holder').children('.details').slideToggle(200);
+  //  });

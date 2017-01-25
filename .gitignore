@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+# Ignore WebStorm project files
+**/.idea/
+.env
+.zip
+.elasticbeanstalk
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+.DS_Store

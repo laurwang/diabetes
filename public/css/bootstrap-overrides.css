@@ -1,0 +1,109 @@
+body {
+  font-family: 'Raleway', "Open Sans", "Myriad Pro", Arial, sans-serif;
+}
+
+.alert { border-radius: 2px }
+
+.btn {
+  border-radius: 2px;
+  font-weight: 100;
+}
+.breadcrumb { margin-bottom: 0 }
+
+pre {
+  background: transparent;
+  border: 0
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 300;
+  margin-top: 0
+}
+
+h1 small, h2 small, h3 small, h4 small, h5 small, h6 small,
+.h1 small, .h2 small, .h3 small, .h4 small, .h5 small, .h6 small,
+h1 .small, h2 .small, h3 .small, h4 .small, h5 .small, h6 .small,
+.h1 .small, .h2 .small, .h3 .small, .h4 .small, .h5 .small, .h6 .small {
+  font-weight: 100
+}
+
+.container .jumbotron,
+.jumbotron {
+  border-radius: 0;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+
+.navbar {
+  border: 0;
+  border-radius: 0;
+}
+
+.navbar:-moz-full-screen,
+.navbar:-ms-fullscreen,
+.navbar:-webkit-full-screen,
+.navbar:fullscreen {
+  display: none
+}
+.navbar a { color: #fff }
+.navbar .navbar-brand {
+  padding: 5px 0 0;
+}
+.navbar-nav > li > a {
+  font-weight: 100;
+  line-height: 29px
+}
+.navbar-nav>li>.dropdown-menu {
+  border-radius: 0 0 2px 2px;
+  box-shadow: none;
+  border: 0;
+  background-color: rgba(0,0,0,.5)
+}
+.nav .open > a,
+.nav .open > a:hover,
+.nav .open > a:focus,
+.nav > li > a:hover,
+.nav > li > a:focus {
+  background-color: rgba(47, 144, 189, 0.2);
+  border-color: rgba(47, 144, 189, 0.1);
+}
+.nav-tabs > li > a {
+  border-bottom: 1px solid #ddd;
+}
+img {
+  max-height: 100%;
+  max-width: 100%
+}
+
+.well {
+  border-radius: 2px;
+  border: none;
+  box-shadow: none
+}
+
+.form-control {
+  border-radius: 2px;
+  box-shadow: none;
+  height: 40px;
+  padding: 9px 12px;
+}
+
+label, .label { font-weight: 100 }
+
+.badge { font-weight: 100 }
+.badge-danger { background-color: #E04F5F }
+.badge-info { background-color: #25B7D3 }
+.badge-success { background-color: #6EBB31 }
+.badge-warning {
+  background-color: #FABC3D;
+  color: #89600C;
+}
+
+.table>tbody>tr>td,
+.table>tbody>tr>th,
+.table>tfoot>tr>td,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>thead>tr>th {
+  border-top-color: rgba(0,0,0,.05)
+}

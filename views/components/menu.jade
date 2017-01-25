@@ -1,0 +1,42 @@
+if (user && ! disableNav)
+    ul#main-nav.unstyled.text-center
+        //
+            if user.customData.partner && user.customData.partner.active && user.customData.partner.associated.length === 1
+                li
+                    a(href="#")
+                        div(
+                            data-socket="#{partner ? partner.socketKey : ''}",
+                            data-partner="#{partnerRef}",
+                            style="height:38px",
+                            src="/public/partner-assets/#{user.customData.partner.active.toLowerCase()}/#{user.customData.partner.active.toLowerCase()}-logo.png"
+                            )#active-partner
+                            i.fa.fa-building-o
+    
+            else if user.customData.partner && user.customData.partner.active && user.customData.partner.associated.length > 1
+                li
+                    a
+                        div(
+                            data-socket="#{partner ? partner.socketKey : ''}",
+                            data-partner="#{partnerRef}",
+                            src="/public/partner-assets/#{user.customData.partner.active.toLowerCase()}/#{user.customData.partner.active.toLowerCase()}-logo.png"
+                            )#active-partner
+                            i.fa.fa-building-o
+    
+                - for (var p in user.customData.partner.associated)
+                    if (user.customData.partner.associated[p] !== user.customData.partner.active)
+                        li
+                            a(href="/set-partner?partner=#{user.customData.partner.associated[p]}&redirectTo=#{currentPath}")
+                                | Switch to #{user.customData.partner.associated[p]}
+
+        if (navigation)
+            - for (var i in navigation)
+                li
+                    a(href="#{navigation[i].href}")
+                        != navigation[i].text
+
+        li
+            a(role="button", data-user-email="#{user.email}")#user-nav
+                img(src="/public/imgs/icons/frightened-smiley.svg", title="User Profile")
+        li
+            a(href="/logout")
+                img(src="/public/imgs/icons/logout.svg", title="Log Out")

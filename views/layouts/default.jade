@@ -1,0 +1,18 @@
+doctype html
+html(lang="en")
+    include ../components/head
+    block head
+
+    body
+        include ../components/nav
+        .container
+            .row
+                .col-sm-12
+
+                    include ../mixins/flashMessages
+
+                    block content
+
+                    include ../components/foot
+
+    block foot

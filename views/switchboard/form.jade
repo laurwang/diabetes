@@ -1,0 +1,180 @@
+extends ../layouts/default
+
+block content
+  .container
+    h4 Let's #{actionText} an action.
+    form(name='add', action=location, method='post')
+      input(type="hidden", name="_csrf", value=_csrf)
+      input(type="hidden", name="id", value=action.id)
+      input(type="hidden", name="isOff", value=action.isOff ? 'true' : 'false')
+      input(type="hidden", id="topicName" name="topicName" value=action.topicName)
+      if action.topicId
+        input(type="hidden", name="oldTopicId", value=action.topicId)
+      .row.form-group
+        .col-sm-2
+          label Topic
+        .col-sm-3
+          select.form-control(name='topicId' id="topicId")
+            for topic in topics
+              option(value=topic.id data-topic-name=topic.name selected=action.topicId===topic.id) #{topic.name}
+      .row.form-group
+        .col-sm-2
+          label Title
+        .col-sm-3
+          input.form-control(type='text', name='title', value=action.title)
+      .row.form-group
+        .col-sm-2
+          label Description
+        .col-sm-3
+          input.form-control(type='text', name='description' value=action.description)
+      .row.form-group
+        .col-sm-2
+          label Owner
+        .col-sm-3
+          input.form-control(type='text', name='owner' value=action.owner ? action.owner : defaultValues.name)
+      .row.form-group
+        .col-sm-2
+          label Application
+        .col-sm-3
+          input.form-control(type='text', name='app' value=action.app ? action.app : defaultValues.app)
+      .row.form-group
+        .col-sm-2
+          label Destination Type
+        .col-sm-3
+          select.form-control(name='destinationType' id='destinationType' onchange='destinationTypeChange(event)')
+            option(value='email' selected=action.destinationType==='email') Email
+            option(value='slack' selected=action.destinationType==='slack') Slack
+            option(value='pusher' selected=action.destinationType==='pusher') In-App Notice
+            option(value='webhook' selected=action.destinationType==='webhook') Webhook
+            option(value='lambda' selected=action.destinationType==='lambda') Lambda Function
+      .row.forWebhook.form-group
+        .col-sm-2
+          label Web Address
+        .col-sm-3
+          input.form-control(type='text', name='url' value=action.url)
+      .row.forSlack.form-group
+        .col-sm-2
+          label Slack Integration
+        .col-sm-3
+          input.form-control(type='text', name='slack1' value=defaultValues.slack[1])
+          input.form-control(type='text', name='slack2' value=defaultValues.slack[2])
+          input.form-control(type='text', name='slack3' value=defaultValues.slack[3])
+      .row.forLambda.form-group
+        .col-sm-2
+          label Lambda Name
+        .col-sm-3
+          input.form-control(type='text', name='lambda', value=action.lambda)
+      .row.forSlack.form-group
+        .col-sm-2
+          label Slack Username (Sender)
+        .col-sm-3
+          input.form-control(type='text' name='username' value=action.sender ? action.sender : defaultValues.piEmail)
+      .row.forSlack.form-group
+        .col-sm-2
+          label Slack Broadcast Channel
+        .col-sm-3
+          input.form-control(type='text' name='channel' value=action.channel ? action.channel : '' placeholder='Do not enter the #.  It will be added.')
+      .row.forEmail.form-group
+        .col-sm-2
+          label Email Sender
+        .col-sm-3
+          input.form-control(type='text' name='sender' value=action.sender ? action.sender : defaultValues.piEmail)
+      .row.forEmail.form-group
+        .col-sm-2
+          label Email Subject
+        .col-sm-3
+          input.form-control(type='text' name='subject' value=action.subject)
+      .row.form-group
+        .col-sm-2
+          label Message Body
+        .col-sm-4
+          textarea.form-control(type='text', name='body' style='margin: 0px; height: 300px; width: 380px;' )= action.body
+        .col-sm-4
+          .templating-info-box
+            h5.forWebhook Enter a JSON object of updates to the record
+            h5.forLambda Messaging not applicable for lambdas
+            br
+            p Templating variables from the record:
+            p partnerName, applicationType, event,
+            p eventTimestamp, resourceType, resourceName,
+            p and value and its fields.
+            br
+            p Usage:
+            p
+              pre #variable#
+            p
+              pre #value#valueField#fieldOfValueField#etc#
+      .row.form-group
+        .col-sm-3.col-sm-offset-2
+          a.btn(href="/switchboard") Cancel
+          &nbsp;
+          input.btn.btn-primary(type="submit", value=actionText)
+    .row
+      .col-sm-12
+        h6 * - required
+        h6 † - can also use a '*' to denote a wildcard matching
+
+  style.
+    .footnote {
+      font-size: 8px;
+    }
+    .forPusher {
+      display: none;
+    }
+    .forLambda {
+      display: none;
+    }
+    .forWebhook {
+      display: none;
+    }
+    .forSlack {
+      display: none;
+    }
+
+  script.
+    function destinationTypeChange(e) {
+      update(e.target.value);
+    }
+
+    function update(value) {
+      if(value === 'email') {
+        $('.forWebhook').hide();
+        $('.forLambda').hide();
+        $('.forEmail').show();
+        $('.forPusher').hide();
+        $('.forSlack').hide();
+      } else if(value === 'lambda') {
+        $('.forWebhook').hide();
+        $('.forEmail').hide();
+        $('.forLambda').show();
+        $('.forPusher').hide();
+        $('.forSlack').hide();
+      } else if (value === 'webhook') {
+        $('.forLambda').hide();
+        $('.forEmail').hide();
+        $('.forWebhook').show();
+        $('.forPusher').hide();
+        $('.forSlack').hide();
+      } else if (value === 'pusher') {
+        $('.forLambda').hide();
+        $('.forEmail').hide();
+        $('.forWebhook').hide();
+        $('.forPusher').show();
+        $('.forSlack').hide();
+      } else if (value === 'slack') {
+        $('.forLambda').hide();
+        $('.forEmail').hide();
+        $('.forWebhook').hide();
+        $('.forPusher').hide();
+        $('.forSlack').show();
+      }
+    }
+
+    $(document).ready(function() {
+      update($('#destinationType option:selected').val());
+      $('#topicId').change(function () {
+        $('#topicName').val(
+          $(this).find('option:selected').data('topic-name')
+        );
+      });
+    });
