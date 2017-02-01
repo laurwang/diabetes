@@ -9,217 +9,183 @@ const Topic = require('../lib/topic');
 const APP_NAME = 'topics';
 
 const DEFAULT = [
-  'applicationType',
-  'resourceType',
-  'resourceName',
-  'event',
-];
-
-const SEARCHES = [
-  'starts with ',
-  'ends with ',
-  'contains ',
+  'name',
+  'type',
+  'unit',
 ];
 
 module.exports = function(app) {
   //app.use('/topics', piAuth.authz);
 
   app.get('/topics', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view',
-    //   req,
-    // });
-
     Topic
       .scan()
       .loadAll()
       .exec(function(err, topics) {
         if (err) return next(err);
+
+        let splitTopics = {
+          foods: [],
+          insulins: [],
+        };
+
+        topics.Items.forEach(function(topic){
+          if (topic.attrs){
+            if (topic.attrs.class.toLowerCase() === 'food') {
+              splitTopics.foods.push(topic.attrs);
+            } else if (topic.attrs.class.toLowerCase() === 'insulin') {
+              splitTopics.insulins.push(topic.attrs);
+            }
+          }
+        });
+
         res.render('topic', {
           breadcrumbs: [{
               text: 'Topics',
             },
           ],
-          _csrf: req.csrfToken(),
-          topics: topics.Items.map(function(topic) {
-            //process the fields for expanded searches
-            DEFAULT.forEach(function(field) {
-              let prefix = '';
-              let stripped = topic.attrs[field];
-              SEARCHES.forEach(function(search) {
-                if (topic.attrs[field].startsWith(search)) {
-                  prefix = search;
-                  stripped = stripped.substring(search.length).trim();
-                }
-              });
-
-              topic.attrs[field] = {
-                prefix: prefix,
-                field: stripped,
-              };
-            });
-
-            return topic.attrs;
-          }),
+          //_csrf: req.csrfToken(),
+          topics: splitTopics,
         });
       });
   });
 
-  app.get('/topics/add', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view.add',
-    //   req,
-    // });
+  app.get('/topics/addFood', function(req, res, next) {
 
-    //initialize so that re-usable form (both add and edit) doesn't freak out
+    //initialize so that re-usable form (both add and copy) doesn't freak out
     let topic = {};
-    DEFAULT.forEach(function(field) {
-      topic[field] = {};
-    });
+
+    if (req.query.topic) {
+      topic = req.query.topic;
+    } else {
+      DEFAULT.forEach(function(field) {
+        topic[field] = '';
+      });
+      topic.class = 'Food';
+      topic.calories = 0;
+    }
 
     res.render('topic/form', {
       breadcrumbs: [{
           text: 'Topics',
           href: '/topics',
         }, {
-          text: 'Add Topic',
+          text: 'Add Food',
         },
       ],
-      _csrf: req.csrfToken(),
+      //_csrf: req.csrfToken(),
       topic: topic,
-      location: '/topics/add',
+      location: '/topics/addFood',
       actionText: 'Add',
     });
   });
 
   app.post('/topics/add', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'add topic',
-    //   value: {
-    //     name: req.body.name,
-    //     owner: req.body.owner,
-    //     team: req.body.team,
-    //     event: req.body.event,
-    //   },
-    //   req,
-    // });
-
     let topic = new Topic({
       name: req.body.name,
-      description: req.body.description,
-      applicationType: req.body.applicationTypePrefix + req.body.applicationType,
-      resourceType: req.body.resourceTypePrefix + req.body.resourceType,
-      resourceName: req.body.resourceNamePrefix + req.body.resourceName,
-      event: req.body.eventPrefix + req.body.event,
-      destinationType: req.body.destinationType,
-      team: req.body.team,
-      owner: req.body.owner,
+      type: req.body.type,
+      unit: req.body.unit,
+      class: 'Insulin',
     });
+
+    if (req.body.class.toLowerCase() === 'food') {
+      topic.class = 'Food';
+      topic.calories = req.body.calories;
+    }
+
     topic.save(function(err) {
       if (err) return next(err);
       res.redirect('/topics');
     });
   });
 
-  app.get('/topics/delete/:id', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'delete topic',
-    //   value: {
-    //     topicId: req.params.id,
-    //   },
-    //   req,
-    // });
-
-    Topic.destroy(req.params.id, function(err) {
-      if (err) return next(err);
-      res.redirect('/topics');
-    });
-  });
-
-  app.get('/topics/edit/:id', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view.edit',
-    //   req,
-    // });
-
+  app.get('/topics/onoff/:id', function(req, res, next) {
     Topic.get(req.params.id, function(err, topic) {
       if (err) return next(err);
-      if (!topic) return next(new Error('no topic found'));
+      if (!topic || !topic.attrs) return next(new Error('No topic with attributes found.'));
 
-      //process the fields for expanded searches
-      DEFAULT.forEach(function(field) {
-        let prefix = '';
-        let stripped = topic.attrs[field];
-        SEARCHES.forEach(function(search) {
-          if (topic.attrs[field].startsWith(search)) {
-            prefix = search;
-            stripped = stripped.substring(search.length).trim();
-          }
-        });
-
-        topic.attrs[field] = {
-          prefix: prefix,
-          field: stripped,
-        };
-      });
-
-      res.render('topic/form', {
-        breadcrumbs: [{
-            text: 'Topics',
-            href: '/topics',
-          }, {
-            text: 'Edit Topic',
-          },
-        ],
-        _csrf: req.csrfToken(),
-        topic: topic.attrs,
-        location: '/topics/edit',
-        actionText: 'Update',
-      });
-    });
-  });
-
-  app.post('/topics/edit', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'edit topic',
-    //   value: {
-    //     topicId: req.body.id,
-    //   },
-    //   req,
-    // });
-
-    req.body.applicationType = req.body.applicationTypePrefix + req.body.applicationType;
-    req.body.resourceType = req.body.resourceTypePrefix + req.body.resourceType;
-    req.body.resourceName = req.body.resourceNamePrefix + req.body.resourceName;
-    req.body.event = req.body.eventPrefix + req.body.event;
-
-    delete req.body.applicationTypePrefix;
-    delete req.body.resourceTypePrefix;
-    delete req.body.resourceNamePrefix;
-    delete req.body.eventPrefix;
-
-    Topic.get(req.body.id, function(err, topic) {
-      if (err) return next(err);
-      if (!topic) return next(new Error('no topic found'));
-      let changed = diff(topic.attrs, req.body);
-      _.forEach(changed, function(value, key) {
-        if (key === '_csrf') return;
-        if (value === '') return;
-        let updateObj = {};
-        updateObj[key] = value;
-        topic.set(updateObj);
-      });
+      console.log('previous setting for display: ', topic.attrs.display);//assume nonexistent equals false for isOff
+      let updateObj = {
+        display: !topic.attrs.display,
+      };
+      topic.set(updateObj);
 
       topic.update(function(err) {
         if (err) return next(err);
         res.redirect('/topics');
       });
     });
+
+    // Topic.destroy(req.params.id, function(err) {
+    //   if (err) return next(err);
+    //   res.redirect('/topics');
+    // });
   });
+
+  app.get('/topics/copy/:id', function(req, res, next) {
+    Topic.get(req.params.id, function(err, topic) {
+      if (err) return next(err);
+      if (!topic || !topic.attrs) return next(new Error('no topic with attributes found'));
+
+      if (topic.attrs.class.toLowerCase() === 'food'){
+        req.query.topic = topic.attrs;
+        res.redirect('/topics/addFood');
+      }
+
+
+      // res.render('topic/form', {
+      //   breadcrumbs: [{
+      //       text: 'Topics',
+      //       href: '/topics',
+      //     }, {
+      //       text: 'Add Food',
+      //     },
+      //   ],
+      //   //_csrf: req.csrfToken(),
+      //   topic: topic.attrs,
+      //   location: '/topics/addFood',
+      //   actionText: 'Add',
+      // });
+    });
+  });
+
+//TODO turn into add, if applicable
+  // app.post('/topics/edit', function(req, res, next) {
+  //   // knowledge.log({
+  //   //   app: APP_NAME,
+  //   //   action: 'edit topic',
+  //   //   value: {
+  //   //     topicId: req.body.id,
+  //   //   },
+  //   //   req,
+  //   // });
+
+  //   req.body.applicationType = req.body.applicationTypePrefix + req.body.applicationType;
+  //   req.body.resourceType = req.body.resourceTypePrefix + req.body.resourceType;
+  //   req.body.resourceName = req.body.resourceNamePrefix + req.body.resourceName;
+  //   req.body.event = req.body.eventPrefix + req.body.event;
+
+  //   delete req.body.applicationTypePrefix;
+  //   delete req.body.resourceTypePrefix;
+  //   delete req.body.resourceNamePrefix;
+  //   delete req.body.eventPrefix;
+
+  //   Topic.get(req.body.id, function(err, topic) {
+  //     if (err) return next(err);
+  //     if (!topic) return next(new Error('no topic found'));
+  //     let changed = diff(topic.attrs, req.body);
+  //     _.forEach(changed, function(value, key) {
+  //       //if (key === '_csrf') return;
+  //       if (value === '') return;
+  //       let updateObj = {};
+  //       updateObj[key] = value;
+  //       topic.set(updateObj);
+  //     });
+
+  //     topic.update(function(err) {
+  //       if (err) return next(err);
+  //       res.redirect('/topics');
+  //     });
+  //   });
+  // });
 };

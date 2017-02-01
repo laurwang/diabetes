@@ -10,51 +10,38 @@ block content
     .row
       .col-sm-4.col-sm-offset-8
         span.pull-right
-          a.btn.btn-info(href="/topics/add") Add a Topic
+          a.btn.btn-info(href="/topics/addFood") Add a Food
     hr
     .row
       .col-sm-5
-        h4 Available Topics
+        h4 Available Foods
     table#table
       thead
         tr
           th Name
-          th Description
-          th Application Type
-          th Resource Name
-          th Resource Type
-          th Event
+          th Type
+          th Unit
+          th Calories
           th &nbsp;
       tbody
-        each topic in topics
+        each topic in topics.foods
           tr
             td
               span= topic.name
             td
-              span= topic.description
+              span= topic.type
             td
-              b
-                span= topic.applicationType.prefix
-              span= topic.applicationType.field
+              span= topic.unit
             td
-              b
-                span= topic.resourceName.prefix
-              span= topic.resourceName.field
+              span= topic.calories
             td
-              b
-                span= topic.resourceType.prefix
-              span= topic.resourceType.field
-            td
-              b
-                span= topic.event.prefix
-              span= topic.event.field
-            td
-              a(style='padding-right:10px;' href='/topics/edit/' + topic.id)
-                  i.fa.fa-pencil-square-o.fa-lg
-                  span  Edit
-              a(href='/topics/delete/' + topic.id)
-                i.fa.fa-trash-o.fa-lg
-                span  Delete
+              a(style='padding-right:10px;' href='/topics/copy/' + topic.id)
+                i.fa.fa-pencil-square-o.fa-lg
+                span  Copy
+              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+                i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
+                i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
+                span= topic.display ? ' On' : ' Off'
     link(rel='stylesheet', href='//cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css', type='text/css')
     link(rel='stylesheet', href='//cdn.datatables.net/buttons/1.1.0/css/buttons.dataTables.min.css', type='text/css')
     script(src='//cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js')
@@ -64,12 +51,12 @@ block content
       $(document).ready(function() {
         $('#table').DataTable({
           bLengthChange: false,
-          order: [[ 2, 'asc' ], [3, 'asc'], [4, 'asc'], [5, 'asc']],
+          order: [[ 1, 'asc' ], [0, 'asc'], [2, 'asc'], [3, 'asc']],
           scrollY: '400px',
           scrollCollapse: true,
           paging: false,
           columnDefs: [
-            { width: '14%', targets: [0, 1, 2, 3, 4, 5, 6] }
+            { width: '20%', targets: [0, 1, 2, 3, 4] }
           ],
           //dom: 'Bfrtip',
           //buttons: [
@@ -77,14 +64,10 @@ block content
           //],
           columns: [{
             className: 'dt-center',
+            searchable: true,
           }, {
             className: 'dt-center',
-          }, {
-            className: 'dt-center',
-            searchable: false,
-          }, {
-            className: 'dt-center',
-            searchable: false,
+            searchable: true,
           }, {
             className: 'dt-center',
             searchable: false,

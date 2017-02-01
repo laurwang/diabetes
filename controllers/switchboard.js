@@ -2,55 +2,16 @@
 
 const _ = require('lodash');
 const diff = require('object-diff');
-//const piAuth = require('@pi/auth');
 const async = require('async');
 
 const Action = require('../lib/action');
 const Topic = require('../lib/topic');
-//const knowledge = require('../lib/knowledge');
 
-const APP_NAME = 'switchboard';
-const SLACK = 'https://hooks.slack.com/services';
-const HAS_SENDER = ['slack', 'email'];
-
-//allows user to pass in email address or just the username part;
-//only accepts the username part of addresses from the given domain
-function extractEmailAcct(address, domain) {
-  let temp = address.split('@');
-  if (temp.length === 1 || (temp.length === 2 && temp[1].toLowerCase() === domain)) {
-    return temp[0];
-  }
-
-  return '';
-}
-
-function processExtraSlackFields(reqBody) {
-  if (reqBody.destinationType === 'slack') {
-    //put together slack url, if entered
-    if (reqBody.slack1 && reqBody.slack2 && reqBody.slack3) {
-      reqBody.url = SLACK + '/' + reqBody.slack1 + '/' + reqBody.slack2 + '/' + reqBody.slack3;
-    }
-
-    if (reqBody.username) {
-      reqBody.sender = reqBody.username;
-    }
-  }
-
-  delete reqBody.slack1;
-  delete reqBody.slack2;
-  delete reqBody.slack3;
-  delete reqBody.username;
-}
+const APP_NAME = 'log';
 
 module.exports = function(app) {
-  //app.use('/switchboard', piAuth.authz);
 
-  app.get('/switchboard', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view',
-    //   req,
-    // });
+  app.get('/log', function(req, res, next) {
 
     Action
       .scan()
@@ -62,7 +23,7 @@ module.exports = function(app) {
               text: 'Switchboard',
             },
           ],
-          _csrf: req.csrfToken(),
+          //_csrf: req.csrfToken(),
           actions: actions.Items.map(function(action) {
             return action.attrs;
           }),
@@ -71,52 +32,30 @@ module.exports = function(app) {
   });
 
   app.get('/switchboard/add', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view.add',
-    //   req,
-    // });
+    Topic
+      .scan()
+      .loadAll()
+      .exec(function(err, topics) {
+        if (err) return next(err);
+        res.render('switchboard/form', {
+          //_csrf: req.csrfToken(),
+          breadcrumbs: [{
+              text: 'Switchboard',
+              href: '/switchboard',
+            }, {
+              text: 'Add Action',
+            },
+          ],
+          action: {},
+          topics: topics.Items.map(function(topic) {
+            return topic.attrs;
+          }),
 
-    // knowledge.find({
-    //   resource: 'apps',
-    //   resourceId: APP_NAME.toLowerCase(),
-    // }, (err, config) => {
-    //   if (err) return cb(err);
-
-      //NB only pointinside-domain emails can be sent.
-      let defaultValues = {
-        piEmail: extractEmailAcct(req.user.email, 'pointinside.com'),
-        name: req.user.username,
-        app: APP_NAME,
-        slack: [SLACK],//.concat(config.slackDefault),
-      };
-
-      Topic
-        .scan()
-        .loadAll()
-        .exec(function(err, topics) {
-          if (err) return next(err);
-          res.render('switchboard/form', {
-            _csrf: req.csrfToken(),
-            breadcrumbs: [{
-                text: 'Switchboard',
-                href: '/switchboard',
-              }, {
-                text: 'Add Action',
-              },
-            ],
-            action: {},
-            topics: topics.Items.map(function(topic) {
-              return topic.attrs;
-            }),
-
-            location: '/switchboard/add',
-            actionText: 'add',
-            defaultValues: defaultValues,
-          });
+          location: '/switchboard/add',
+          actionText: 'add',
+          app: APP_NAME,
         });
-
-    //});
+      });
   });
 
   app.post('/switchboard/add', function(req, res, next) {
@@ -131,12 +70,6 @@ module.exports = function(app) {
     //   },
     //   req,
     // });
-
-    processExtraSlackFields(req.body);
-
-    if (HAS_SENDER.indexOf(req.body.destinationType) === -1) {
-      req.body.sender = '';
-    }
 
     let action = new Action({
       title: req.body.title,
@@ -226,7 +159,7 @@ module.exports = function(app) {
       };
 
       res.render('switchboard/form', {
-        _csrf: req.csrfToken(),
+        //_csrf: req.csrfToken(),
         breadcrumbs: [{
             text: 'Switchboard',
             href: '/switchboard',
@@ -244,11 +177,6 @@ module.exports = function(app) {
   });
 
   app.post('/switchboard/edit', function(req, res, next) {
-    processExtraSlackFields(req.body);
-
-    if (HAS_SENDER.indexOf(req.body.destinationType) === -1) {
-      req.body.sender = '';
-    }
 
     if (req.body.topicId === req.body.oldTopicId) {
       delete req.body.oldTopicId;
@@ -268,7 +196,7 @@ module.exports = function(app) {
         if (!action) return next(new Error('no action found'));
         let changed = diff(action.attrs, req.body);
         _.forEach(changed, function(value, key) {
-          if (key === '_csrf' || key === 'isOff') return;
+          //if (key === '_csrf' || key === 'isOff') return;
           if (value === '') return;//won't let you blank something that's been populated, just end up with what was previously there
           let updateObj = {};
           updateObj[key] = value;

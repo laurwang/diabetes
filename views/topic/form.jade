@@ -4,7 +4,6 @@ block content
   .container
     h4 #{actionText} a topic.
     form(name='add', action=location, method='post')
-      input(type="hidden", name="_csrf", value=_csrf)
       input(type="hidden", name="id", value=topic.id)
       .row.form-group
         .col-sm-2

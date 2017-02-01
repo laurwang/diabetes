@@ -14,7 +14,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
-const csrf = require('csurf');
+//const csrf = require('csurf');
 //const favicon = require('serve-favicon');
 const controllers = require('./controllers');
 //const logger = require('./logging');
@@ -54,14 +54,14 @@ app.use('/node_modules', express.static(__dirname + '/node_modules'));
 //   next();
 // });
 
-app.use(function csrfProxy(req, res, next) {
-  // // Make env available to views
-  // res.locals.NODE_ENV = ENV;
+// app.use(function csrfProxy(req, res, next) {
+//   // // Make env available to views
+//   // res.locals.NODE_ENV = ENV;
 
-  // if (/\/api\/|knowledge/.test(req.url) || req.url === '/preferences') return next();
+//   // if (/\/api\/|knowledge/.test(req.url) || req.url === '/preferences') return next();
 
-  csrf({ cookie: true })(req, res, next);
-});
+//   csrf({ cookie: true })(req, res, next);
+// });
 
 // //make csrf integrated with client angular seamlessly
 // app.use(function setCSURF(req, res, next) {
@@ -118,7 +118,7 @@ app.use(function(err, req, res, next) {
   if (!res.headersSent && err.statusCode) res.status(err.statusCode);
 
   // Custom CSRF error messaging
-  if (err.code === 'EBADCSRFTOKEN') err.message = 'Invalid CSRF token, please go back and try your request again.';
+  //if (err.code === 'EBADCSRFTOKEN') err.message = 'Invalid CSRF token, please go back and try your request again.';
 
   res.render('errors/error', { disableNav: true, error: err });
 });
