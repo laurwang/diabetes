@@ -2,9 +2,7 @@
 
 const _ = require('lodash');
 const diff = require('object-diff');
-//const piAuth = require('@pi/auth');
 const Topic = require('../lib/topic');
-//const knowledge = require('../lib/knowledge');
 
 const APP_NAME = 'topics';
 
@@ -12,11 +10,10 @@ const DEFAULT = [
   'name',
   'type',
   'unit',
+  'calories',
 ];
 
 module.exports = function(app) {
-  //app.use('/topics', piAuth.authz);
-
   app.get('/topics', function(req, res, next) {
     Topic
       .scan()
@@ -50,50 +47,85 @@ module.exports = function(app) {
       });
   });
 
-  app.get('/topics/addFood', function(req, res, next) {
-
+  app.get('/topics/add/:class', function(req, res, next) {
+    //console.log('received req query', req.query);
     //initialize so that re-usable form (both add and copy) doesn't freak out
-    let topic = {};
 
-    if (req.query.topic) {
-      topic = req.query.topic;
+    if (req.query.id) {
+      Topic.get(req.query.id, function(err, topic) {
+        if (err) return next(err);
+        if (!topic || !topic.attrs) return next(new Error('no topic with attributes found'));
+
+        //console.log('topic', topic.attrs);
+        if (topic.attrs.class.toLowerCase() === 'food'){
+          res.render('topic/form', {
+            breadcrumbs: [{
+                text: 'Topics',
+                href: '/topics',
+              }, {
+                text: 'Add a Food',
+              },
+            ],
+            //_csrf: req.csrfToken(),
+            topic: topic.attrs,
+            location: '/topics/add',
+          });
+        } else if (topic.attrs.class.toLowerCase() === 'insulin'){
+          res.render('topic/form', {
+            breadcrumbs: [{
+                text: 'Topics',
+                href: '/topics',
+              }, {
+                text: 'Add an Insulin',
+              },
+            ],
+            //_csrf: req.csrfToken(),
+            topic: topic.attrs,
+            location: '/topics/add',
+          });
+        }
+      });
     } else {
+      let topic = {
+        class: req.params.class,
+      };
       DEFAULT.forEach(function(field) {
         topic[field] = '';
       });
-      topic.class = 'Food';
-      topic.calories = 0;
-    }
 
-    res.render('topic/form', {
-      breadcrumbs: [{
-          text: 'Topics',
-          href: '/topics',
-        }, {
-          text: 'Add Food',
-        },
-      ],
-      //_csrf: req.csrfToken(),
-      topic: topic,
-      location: '/topics/addFood',
-      actionText: 'Add',
-    });
+      res.render('topic/form', {
+        breadcrumbs: [{
+            text: 'Topics',
+            href: '/topics',
+          }, {
+            text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a Food',
+          },
+        ],
+        //_csrf: req.csrfToken(),
+        topic: topic,
+        location: '/topics/add',
+      });
+    }
   });
 
   app.post('/topics/add', function(req, res, next) {
-    let topic = new Topic({
+    //console.log('req.body', req.body);
+    let topic = {
       name: req.body.name,
       type: req.body.type,
       unit: req.body.unit,
-      class: 'Insulin',
-    });
+      class: req.body.classText,
+    };
 
-    if (req.body.class.toLowerCase() === 'food') {
+    if (topic.class.toLowerCase() === 'food') {
       topic.class = 'Food';
       topic.calories = req.body.calories;
+    } else if (topic.class.toLowerCase() === 'insulin') {
+      topic.class = 'Insulin';
+      topic.unit = 'unit';
     }
 
-    topic.save(function(err) {
+    (new Topic(topic)).save(function(err) {
       if (err) return next(err);
       res.redirect('/topics');
     });
@@ -120,33 +152,6 @@ module.exports = function(app) {
     //   if (err) return next(err);
     //   res.redirect('/topics');
     // });
-  });
-
-  app.get('/topics/copy/:id', function(req, res, next) {
-    Topic.get(req.params.id, function(err, topic) {
-      if (err) return next(err);
-      if (!topic || !topic.attrs) return next(new Error('no topic with attributes found'));
-
-      if (topic.attrs.class.toLowerCase() === 'food'){
-        req.query.topic = topic.attrs;
-        res.redirect('/topics/addFood');
-      }
-
-
-      // res.render('topic/form', {
-      //   breadcrumbs: [{
-      //       text: 'Topics',
-      //       href: '/topics',
-      //     }, {
-      //       text: 'Add Food',
-      //     },
-      //   ],
-      //   //_csrf: req.csrfToken(),
-      //   topic: topic.attrs,
-      //   location: '/topics/addFood',
-      //   actionText: 'Add',
-      // });
-    });
   });
 
 //TODO turn into add, if applicable

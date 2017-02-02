@@ -2,9 +2,9 @@ extends ../layouts/default
 
 block content
   .container
-    h4 #{actionText} a topic.
+    h3(style='margin-bottom: 20px; ') Add #{topic.class}.
     form(name='add', action=location, method='post')
-      input(type="hidden", name="id", value=topic.id)
+      input(type='hidden', name='classText', value=topic.class)
       .row.form-group
         .col-sm-2
           label Name
@@ -12,80 +12,33 @@ block content
           input.form-control(type='text', name='name', value=topic.name)
       .row.form-group
         .col-sm-2
-          label Description
+          label Type
         .col-sm-3
-          input.form-control(type='text', name='description' value=topic.description)
-      .row.form-group
+          select.form-control(name='type' id='type')
+            option(value='') Select the type of #{topic.class.toLowerCase()}.
+            option(value='snack' selected=topic.type==='snack' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Snack
+            option(value='protein' selected=topic.type==='protein' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Protein
+            option(value='starch' selected=topic.type==='starch' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Starch
+            option(value='veg' selected=topic.type==='veg' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Fruit or Vegetable
+            option(value='fast' selected=topic.type==='fast' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Fast-acting
+            option(value='slow' selected=topic.type==='slow' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Slow-acting
+      .row.form-group(style=topic.class.toLowerCase()==='food' ? '' : 'display: none;')
         .col-sm-2
-          label Application Type
-            sup.footnote *†
-        .col-sm-4
-          .col-sm-4
-            select.form-control(name='applicationTypePrefix' id='applicationTypePrefix')
-              option(value='') is exactly
-              option(value='starts with ' selected=topic.applicationType.prefix==='starts with ') starts with
-              option(value='ends with ' selected=topic.applicationType.prefix==='ends with ') ends with
-              option(value='contains ' selected=topic.applicationType.prefix==='contains ') contains
-          .col-sm-8
-            input.form-control(type='text', name='applicationType' value=topic.applicationType.field)
-      .row.form-group
-        .col-sm-2
-          label Resource Type
-            sup.footnote *†
-        .col-sm-4
-          .col-sm-4
-            select.form-control(name='resourceTypePrefix' id='resourceTypePrefix')
-              option(value='') is exactly
-              option(value='starts with ' selected=topic.resourceType.prefix==='starts with ') starts with
-              option(value='ends with ' selected=topic.resourceType.prefix==='ends with ') ends with
-              option(value='contains ' selected=topic.resourceType.prefix==='contains ') contains
-          .col-sm-8
-            input.form-control(type='text', name='resourceType' value=topic.resourceType.field)
-      .row.form-group
-        .col-sm-2
-          label Resource Name
-            sup.footnote *†
-        .col-sm-4
-          .col-sm-4
-            select.form-control(name='resourceNamePrefix' id='resourceNamePrefix')
-              option(value='') is exactly
-              option(value='starts with ' selected=topic.resourceName.prefix==='starts with ') starts with
-              option(value='ends with ' selected=topic.resourceName.prefix==='ends with ') ends with
-              option(value='contains ' selected=topic.resourceName.prefix==='contains ') contains
-          .col-sm-8
-            input.form-control(type='text', name='resourceName' value=topic.resourceName.field)
-      .row.form-group
-        .col-sm-2
-          label Event
-        .col-sm-4
-          .col-sm-4
-            select.form-control(name='eventPrefix' id='eventPrefix')
-              option(value='') is exactly
-              option(value='starts with ' selected=topic.event.prefix==='starts with ') starts with
-              option(value='ends with ' selected=topic.event.prefix==='ends with ') ends with
-              option(value='contains ' selected=topic.event.prefix==='contains ') contains
-          .col-sm-8
-            input.form-control(type='text', name='event' value=topic.event.field)
-      .row.form-group
-        .col-sm-2
-          label Which team owns this
+          label Unit
         .col-sm-3
-          select.form-control(name='team' id='team')
-            option(value='') Select a team
-            option(value='big-data' selected=topic.team==='big-data') Big Data
-            option(value='cloud-infastructure' selected=topic.team==='cloud-infastructure') Cloud Infastrcture
-            option(value='content-tools' selected=topic.team==='content-tools') Content Tools
-            option(value='delivery' selected=topic.team==='delivery') Delivery
-            option(value='mobile' selected=topic.team==='mobile') Mobile
-            option(value='mst' selected=topic.team==='mst') Map Services
-            option(value='research' selected=topic.team==='research') Research
-            option(value='search' selected=topic.team==='search') Search
-            option(value='webapps' selected=topic.team==='webapps') Web Apps
-      .row
-        .col-sm-2.form-group
-          label Owner
+          select.form-control(name='unit' id='unit')
+            option(value='unit') Unit
+            option(value='cup' selected=topic.unit==='cup') Cup (8oz)
+            option(value='oz' selected=topic.unit==='oz') Ounce
+            option(value='slice' selected=topic.unit==='slice') Slice
+            option(value='serving' selected=topic.unit==='serving') Serving
+            option(value='tbsp' selected=topic.unit==='tbsp') Tablespoon
+            option(value='tsp' selected=topic.unit==='tsp') Teaspoon
+      .row.form-group(style=topic.class.toLowerCase()==='food' ? '' : 'display: none;')
+        .col-sm-2
+          label Calories
         .col-sm-3
-          input.form-control(type='email', name="owner", value=topic.owner placeholder="i.e. phillip.j.fry@pointinside.com")
+          input.form-control(type='text', name='calories' value=topic.calories)    
       .row
         .col-sm-12
           br
@@ -93,20 +46,4 @@ block content
         .col-sm-2.col-sm-offset-2
           a.btn(href="/topics") Cancel
           &nbsp;
-          input.btn.btn-primary(type="submit", value=actionText)
-          
-    .row
-      .col-sm-12
-        h6 * - required
-        h6 † - can also use a '*' to denote a wildcard matching
-
-  style.
-    .footnote {
-      font-size: 8px;
-    }
-    .forEmail {
-      display: none;
-    }
-    .forLambda {
-      display: none;
-    }
+          input.btn.btn-primary(type='submit', value='Add')

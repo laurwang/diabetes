@@ -8,14 +8,43 @@ block content
         hr
         div 
     .row
-      .col-sm-4.col-sm-offset-8
-        span.pull-right
-          a.btn.btn-info(href="/topics/addFood") Add a Food
+      .col-sm-4
+        .col-sm-6
+          span.pull-left
+            a.btn.btn-info(href='/topics/add/Food') Add a Food
+        .col-sm-6
+          span.pull-right
+            a.btn.btn-info(href='/topics/add/Insulin') Add an Insulin
     hr
     .row
       .col-sm-5
-        h4 Available Foods
-    table#table
+        h4 Insulins
+    table#insulin(style='width:100%; ')
+      thead
+        tr
+          th Name
+          th Type
+          th &nbsp;
+      tbody
+        each topic in topics.insulins
+          tr
+            td
+              span= topic.name
+            td
+              span= topic.type
+            td
+              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
+                i.fa.fa-pencil-square-o.fa-lg
+                span  Copy
+              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+                i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
+                i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
+                span= topic.display ? ' On' : ' Off'
+    hr
+    .row
+      .col-sm-5
+        h4 Foods
+    table#food
       thead
         tr
           th Name
@@ -35,7 +64,7 @@ block content
             td
               span= topic.calories
             td
-              a(style='padding-right:10px;' href='/topics/copy/' + topic.id)
+              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
                 i.fa.fa-pencil-square-o.fa-lg
                 span  Copy
               a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
@@ -49,7 +78,7 @@ block content
     script(src='//cdn.datatables.net/buttons/1.1.0/js/buttons.html5.min.js')
     script.
       $(document).ready(function() {
-        $('#table').DataTable({
+        $('#food').DataTable({
           bLengthChange: false,
           order: [[ 1, 'asc' ], [0, 'asc'], [2, 'asc'], [3, 'asc']],
           scrollY: '400px',
@@ -79,7 +108,7 @@ block content
             orderable: false,
           } ],
           initComplete: function(settings) {
-            $('#table thead th[title]').tooltip( {
+            $('#food thead th[title]').tooltip( {
               container: 'body',
             });
           },
@@ -89,6 +118,15 @@ block content
     style.
       .itemTitle {
         width: 300px;
+      }
+      #insulin td {
+        text-align: center;
+        padding: 8px;
+      }
+      #insulin th {
+        border-bottom: 1px solid;
+        text-align: center;
+        padding: 8px;
       }
 
   //script.
