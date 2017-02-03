@@ -1,0 +1,64 @@
+extends ../layouts/default
+
+block content
+  .container
+    .row
+      .col-sm-12
+        h1 Record Daily Activity
+        hr
+        div 
+    .row
+      .col-sm-6
+        .col-sm-4
+          span.pull-left
+            a.btn.btn-info(href='/record/add/Meal') Add a Meal
+        .col-sm-4
+          span.pull-left
+            a.btn.btn-info(href='/record/add/Dosage') Add a Dosage
+        .col-sm-4
+          span.pull-left
+            a.btn.btn-info(href='/record/add/Reading') Add a Reading        
+    hr
+    .row
+      .col-sm-5
+        h4 Activity on #{recordsDate}
+    table#activity(style='width:100%; ')
+      thead
+        tr
+          th Time
+          th Class
+          th Amount
+            sup.footnote †
+          th &nbsp;
+      tbody
+        each record in records
+          tr
+            td
+              span= record.time
+            td
+              span= record.class
+            td
+              span= record.quantity              
+            td
+              a(style='padding-right:10px;' href='/record/edit/' + record.class + '?id=' + record.id + 'date=' + recordsDate)
+                i.fa.fa-pencil-square-o.fa-lg
+                span  Edit
+              a(style='padding-right:10px;' href='/record/delete/' + recordsDate + '/' + record.id)
+                i.fa.fa-trash-o.fa-lg
+                span  Delete                
+    .row
+      .col-sm-12
+        h6 † - Calories for Meal; Units for Insulin Dosage; Level for Sugar Reading              
+    style.
+      .footnote {
+        font-size: 8px;
+      }      
+      #activity td {
+        text-align: center;
+        padding: 8px;
+      }
+      #activity th {
+        border-bottom: 1px solid;
+        text-align: center;
+        padding: 8px;
+      }

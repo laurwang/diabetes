@@ -7,70 +7,96 @@ const async = require('async');
 const Action = require('../lib/action');
 const Topic = require('../lib/topic');
 
-const APP_NAME = 'log';
+const APP_NAME = 'record';
 
 module.exports = function(app) {
 
-  app.get('/log', function(req, res, next) {
+  app.get('/record', function(req, res, next) {
+    let dateToGet;
+    if (req.query.date) {
+      dateToGet = req.query.date;
+    } else {
+      let jetzt = new Date();
+      dateToGet = jetzt.getDate() + '';
+      if (dateToGet.length === 1){
+        dateToGet = '0' + dateToGet;
+      }
+      let temp = jetzt.getMonth() + 1;
+      if(temp < 10){
+        dateToGet += ('-0' + temp + '-' + (1900 + jetzt.getYear()));
+      } else {
+        dateToGet += ('-' + temp + '-' + (1900 + jetzt.getYear()));
+      }
+      //console.log('getting ', dateToGet);
+    }
+
+    //to convert to (UTC) milliseconds at local start of day
+    //  let temp = req.query.date.split('-');
+    //  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));
 
     Action
-      .scan()
+      .query(dateToGet)
       .loadAll()
       .exec(function(err, actions) {
         if (err) return next(err);
-        res.render('switchboard/index', {
+        res.render('record/index', {
           breadcrumbs: [{
-              text: 'Switchboard',
+              text: 'Records',
             },
           ],
           //_csrf: req.csrfToken(),
-          actions: actions.Items.map(function(action) {
+          records: actions.Items.map(function(action) {
             return action.attrs;
           }),
+          recordsDate: dateToGet,
         });
       });
   });
 
-  app.get('/switchboard/add', function(req, res, next) {
+  app.get('/record/add/:class', function(req, res, next) {
     Topic
       .scan()
       .loadAll()
       .exec(function(err, topics) {
         if (err) return next(err);
-        res.render('switchboard/form', {
+
+        let splitTopics = {
+          foods: [],
+          insulins: [],
+        };
+
+        topics.Items.forEach(function(topic){
+          if (topic.attrs){
+            if (topic.attrs.class.toLowerCase() === 'food') {
+              splitTopics.foods.push(topic.attrs);
+            } else if (topic.attrs.class.toLowerCase() === 'insulin') {
+              splitTopics.insulins.push(topic.attrs);
+            }
+          }
+        });
+
+        res.render('record/form', {
           //_csrf: req.csrfToken(),
           breadcrumbs: [{
-              text: 'Switchboard',
-              href: '/switchboard',
+              text: 'Records',
+              href: '/record',
             }, {
-              text: 'Add Action',
+              text: 'Add a ' + req.params.class,
             },
           ],
-          action: {},
-          topics: topics.Items.map(function(topic) {
-            return topic.attrs;
-          }),
+          action: {
+            class: req.params.class,
+          },
+          topics: splitTopics,
 
-          location: '/switchboard/add',
-          actionText: 'add',
+          location: '/record/add',
+          actionText: 'Add',
           app: APP_NAME,
         });
       });
   });
 
-  app.post('/switchboard/add', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'add action',
-    //   value: {
-    //     title: req.body.title,
-    //     topicId: req.body.topicId,
-    //     topicName: req.body.topicName,
-    //     destinationType: req.body.destinationType,
-    //   },
-    //   req,
-    // });
-
+  app.post('/record/add', function(req, res, next) {
     let action = new Action({
       title: req.body.title,
       description: req.body.description,
@@ -93,16 +119,7 @@ module.exports = function(app) {
     });
   });
 
-  app.get('/switchboard/edit/:topicId/:id', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'view.edit',
-    //   value: {
-    //     topicId: req.params.topicId,
-    //     actionId: req.params.id,
-    //   },
-    //   req,
-    // });
+  app.get('/record/edit/:class/:date/:id', function(req, res, next) {
 
     let actionToPassIn;
     let topicsToPassIn;
@@ -176,20 +193,10 @@ module.exports = function(app) {
     });
   });
 
-  app.post('/switchboard/edit', function(req, res, next) {
+  app.post('/record/edit', function(req, res, next) {
 
     if (req.body.topicId === req.body.oldTopicId) {
       delete req.body.oldTopicId;
-
-      // knowledge.log({
-      //   app: APP_NAME,
-      //   action: 'edit action',
-      //   value: {
-      //     topicId: req.body.topicId,
-      //     actionId: req.body.id,
-      //   },
-      //   req,
-      // });
 
       Action.get(req.body.topicId, req.body.id, function(err, action) {
         if (err) return next(err);
@@ -211,18 +218,6 @@ module.exports = function(app) {
     } else {
       let oldTopicId = req.body.oldTopicId;
       delete req.body.oldTopicId;
-
-      // knowledge.log({
-      //   app: APP_NAME,
-      //   action: 'replace action',
-      //   value: {
-      //     topicId: req.body.topicId,
-      //     topicName: req.body.topicName,
-      //     actionId: req.body.id,
-      //     oldTopicId: oldTopicId,
-      //   },
-      //   req,
-      // });
 
       let action = new Action({
         id: req.body.id,
@@ -252,48 +247,10 @@ module.exports = function(app) {
 
   });
 
-  app.get('/switchboard/delete/:topicId/:id', function(req, res, next) {
-    // knowledge.log({
-    //   app: APP_NAME,
-    //   action: 'delete action',
-    //   value: {
-    //     topicId: req.params.topicId,
-    //     actionId: req.params.id,
-    //   },
-    //   req,
-    // });
-
-    Action.destroy(req.params.topicId, req.params.id, function(err) {
+  app.get('/record/delete/:date/:id', function(req, res, next) {
+    Action.destroy(req.params.date, req.params.id, function(err) {
       if (err) return next(err);
-      res.redirect('/switchboard');
-    });
-  });
-
-  app.get('/switchboard/turnOff/:topicId/:id', function(req, res, next) {
-    Action.get(req.params.topicId, req.params.id, function(err, action) {
-      if (err) return next(err);
-      if (!action || !action.attrs) return next(new Error('No action with attributes found.'));
-
-      // knowledge.log({
-      //   app: APP_NAME,
-      //   action: 'turn action ${action.attrs.isOff ? "on" : "off"}',
-      //   value: {
-      //     topicId: req.params.topicId,
-      //     actionId: req.params.id,
-      //   },
-      //   req,
-      // });
-
-      console.log('previous setting for isOff: ', action.attrs.isOff);//assume nonexistent equals false for isOff
-      let updateObj = {
-        isOff: !action.attrs.isOff,
-      };
-      action.set(updateObj);
-
-      action.update(function(err) {
-        if (err) return next(err);
-        res.redirect('/switchboard');
-      });
+      res.redirect('/record');
     });
   });
 };
