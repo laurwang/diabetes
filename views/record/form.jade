@@ -2,15 +2,16 @@ extends ../layouts/default
 
 block content
   .container
-    h3(style='margin-bottom: 20px; ') Add a #{action.class}.
+    h3(style='margin-bottom: 20px; ') #{buttonText} a #{action.class}.
     form(name='add', action=location, method='post')
       input(type='hidden', name='classText', value=action.class)
       input(type='hidden', name='id', value=action.id)
+      input(type='hidden', name='originalDate', value=action.date)
       .row.form-group
         .col-sm-2
           label Date
         .col-sm-3
-          input.form-control(type='text', name='date', value=action.date)
+          input.form-control(type='text', name='date', value=action.date, disabled=buttonText==='Update')
       .row.form-group
         .col-sm-2
           label Time
@@ -31,7 +32,7 @@ block content
           select.form-control(name='insulin' id='insulin')
             option(value='') Select the type of Insulin.
             each drug in topics.insulins
-              option(selected=action.insulinId===drug.id value='#{drug.id} (#{drug.type}') #{drug.name} (#{drug.type})
+              option(selected=action.insulinId===drug.id value='#{drug.id}|#{drug.type}') #{drug.name} (#{drug.type})
       .row
         .col-sm-12
           br
@@ -39,4 +40,4 @@ block content
         .col-sm-2.col-sm-offset-2
           a.btn(href="/record") Cancel
           &nbsp;
-          input.btn.btn-primary(type='submit', value=actionText)
+          input.btn.btn-primary(type='submit', value=buttonText)

@@ -9,6 +9,15 @@ const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
 
+
+//to convert to (UTC) milliseconds at local start of day
+//TODO check date is formatted correctly
+function getStartOfDayMilliseconds(date){
+  let temp = date.split('-');
+  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));
+  return time.getTime();
+}
+
 module.exports = function(app) {
 
   app.get('/record', function(req, res, next) {
@@ -29,10 +38,6 @@ module.exports = function(app) {
       }
       //console.log('getting ', dateToGet);
     }
-
-    //to convert to (UTC) milliseconds at local start of day
-    //  let temp = req.query.date.split('-');
-    //  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));
 
     Action
       .query(dateToGet)
@@ -89,47 +94,76 @@ module.exports = function(app) {
           },
           topics: splitTopics,
 
-          location: '/record/add',
-          actionText: 'Add',
+          location: '/record/update',
+          buttonText: 'Add',
           app: APP_NAME,
         });
       });
   });
 
-  app.post('/record/add', function(req, res, next) {
-    let action = new Action({
-      title: req.body.title,
-      description: req.body.description,
-      topicId: req.body.topicId,
-      topicName: req.body.topicName,
-      destinationType: req.body.destinationType,
-      url: req.body.url,
-      lambda: req.body.lambda,
-      body: req.body.body,
-      subject: req.body.subject,
-      sender: req.body.sender,
-      owner: req.body.owner,
-      isOff: false,
-      app: req.body.app,
-      channel: req.body.channel,
-    });
-    action.save(function(err) {
-      if (err) return next(err);
-      res.redirect('/switchboard');
-    });
+  app.post('/record/update', function(req, res, next) {
+    console.log('req received ', req.body);
+
+    let info = {
+      class: req.body.classText,
+      quantity: req.body.quantity,
+    };
+
+    if (info.class.toLowerCase() === 'meal') {
+      // mealCalories: joi.object().keys({
+      //     all: joi.number().integer(),
+      //     protein: joi.number().integer(),
+      //     starch: joi.number().integer(),
+      //     veg: joi.number().integer(),
+      //     snack: joi.number().integer(),
+      // }).optional(),
+      // mealFoods: joi.array().items(joi.string()).single().optional(),//id<space>calories
+    } else if (info.class.toLowerCase() === 'dosage') {
+      let insulin = req.body.insulin.split('|');
+      console.log('received insulin ', insulin);
+      info.insulinType = insulin[1];
+      info.insulinId = insulin[0];
+    }
+
+    if (req.body.id) {
+      info.date = req.body.originalDate;
+      info.time = getStartOfDayMilliseconds(info.date) + (req.body.hour * 3600 + req.body.minute * 60) * 1000;
+      info.id = req.body.id;
+      Action.get(info.date, info.id, function(err, action) {
+        if (err) return next(err);
+        if (!action) return next(new Error('No such record found for ' + info.date));
+        let changed = diff(action.attrs, info);
+        _.forEach(changed, function(value, key) {
+          //if (key === '_csrf' || key === 'isOff') return;
+          //if (value === '') return;//won't let you blank something that's been populated, just end up with what was previously there
+          let updateObj = {};
+          updateObj[key] = value;
+          action.set(updateObj);
+        });
+
+        action.update(function(err) {
+          if (err) return next(err);
+          res.redirect('/record');
+        });
+      });
+    } else {
+      info.date = req.body.date;
+      info.time = getStartOfDayMilliseconds(info.date) + (req.body.hour * 3600 + req.body.minute * 60) * 1000;
+      let action = new Action(info);
+
+      action.save(function(err) {
+        if (err) return next(err);
+        res.redirect('/record');
+      });
+    }
   });
 
   app.get('/record/edit/:class/:date/:id', function(req, res, next) {
 
     let actionToPassIn;
-    let topicsToPassIn;
-
-    //NB only pointinside-domain emails can be sent.
-    let defaultValues = {
-      piEmail: extractEmailAcct(req.user.email, 'pointinside.com'),
-      name: req.user.username,
-      app: APP_NAME,
-      slack: ['', '', '', ''],
+    let topicsToPassIn = {
+      foods: [],
+      insulins: [],
     };
 
     async.parallel([
@@ -138,14 +172,16 @@ module.exports = function(app) {
           .scan()
           .loadAll()
           .exec(function(err, topics) {
-            if (err) return cb(err);
+            if (err) return next(err);
 
-            if (!topics) {
-              topicsToPassIn = {};
-            }
-
-            topicsToPassIn = topics.Items.map(function(topic) {
-              return topic.attrs;
+            topics.Items.forEach(function(topic){
+              if (topic.attrs){
+                if (topic.attrs.class.toLowerCase() === 'food') {
+                  topicsToPassIn.foods.push(topic.attrs);
+                } else if (topic.attrs.class.toLowerCase() === 'insulin') {
+                  topicsToPassIn.insulins.push(topic.attrs);
+                }
+              }
             });
 
             cb();
@@ -153,98 +189,42 @@ module.exports = function(app) {
       },
 
       function getActions(cb) {
-        Action.get(req.params.topicId, req.params.id, function(err, action) {
+        Action.get(req.params.date, req.params.id, function(err, action) {
           if (err) return cb(err);
 
-          if (!action) return cb(new Error('no action found'));
+          if (!action) return cb(new Error('No record found'));
 
           actionToPassIn = action.attrs;
+          actionToPassIn.class = req.params.class;
+          let min = (actionToPassIn.time - getStartOfDayMilliseconds(actionToPassIn.date)) / 60000;
+          actionToPassIn.minute = min % 60;
+          actionToPassIn.hour = (min - actionToPassIn.minute) / 60;
+
           cb();
         });
       },
     ], function(err) {
       if (err) return next(err);
-      if (actionToPassIn.destinationType === 'slack' && actionToPassIn.url) {
-        let temptemp = actionToPassIn.url.replace(SLACK + '/', '').split('/');
-        if (temptemp.length === (defaultValues.slack.length - 1)) {
-          temptemp.forEach(function(part, index) {
-            defaultValues.slack[index + 1] = part;
-          });
-        }else {
-          console.log('Unexpected splitting of url for this slack action.  Skipping display info.');
-        }
-      };
 
-      res.render('switchboard/form', {
+      console.log('action passed in ', actionToPassIn);
+
+      res.render('record/form', {
         //_csrf: req.csrfToken(),
         breadcrumbs: [{
-            text: 'Switchboard',
-            href: '/switchboard',
+            text: 'Records',
+            href: '/record',
           }, {
-            text: 'Edit Action',
+            text: 'Edit a ' + req.params.class,
           },
         ],
         action: actionToPassIn,
         topics: topicsToPassIn,
-        location: '/switchboard/edit',
-        actionText: 'update',
-        defaultValues: defaultValues,
+
+        location: '/record/update',
+        buttonText: 'Update',
+        app: APP_NAME,
       });
     });
-  });
-
-  app.post('/record/edit', function(req, res, next) {
-
-    if (req.body.topicId === req.body.oldTopicId) {
-      delete req.body.oldTopicId;
-
-      Action.get(req.body.topicId, req.body.id, function(err, action) {
-        if (err) return next(err);
-        if (!action) return next(new Error('no action found'));
-        let changed = diff(action.attrs, req.body);
-        _.forEach(changed, function(value, key) {
-          //if (key === '_csrf' || key === 'isOff') return;
-          if (value === '') return;//won't let you blank something that's been populated, just end up with what was previously there
-          let updateObj = {};
-          updateObj[key] = value;
-          action.set(updateObj);
-        });
-
-        action.update(function(err) {
-          if (err) return next(err);
-          res.redirect('/switchboard');
-        });
-      });
-    } else {
-      let oldTopicId = req.body.oldTopicId;
-      delete req.body.oldTopicId;
-
-      let action = new Action({
-        id: req.body.id,
-        title: req.body.title,
-        description: req.body.description,
-        topicId: req.body.topicId,
-        topicName: req.body.topicName,
-        destinationType: req.body.destinationType,
-        url: req.body.url,
-        lambda: req.body.lambda,
-        body: req.body.body,
-        subject: req.body.subject,
-        sender: req.body.sender,
-        owner: req.body.owner,
-        isOff: req.body.isOff == 'true' ? true : false,
-        app: req.body.app,
-        channel: req.body.channel,
-      });
-      action.save(function(err) {
-        if (err) return next(err);
-        Action.destroy(oldTopicId, req.body.id, function(err) {
-          if (err) return next(err);
-          res.redirect('/switchboard');
-        });
-      });
-    }
-
   });
 
   app.get('/record/delete/:date/:id', function(req, res, next) {

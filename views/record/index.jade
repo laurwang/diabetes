@@ -40,7 +40,7 @@ block content
             td
               span= record.quantity              
             td
-              a(style='padding-right:10px;' href='/record/edit/' + record.class + '?id=' + record.id + 'date=' + recordsDate)
+              a(style='padding-right:10px;' href='/record/edit/' + record.class + '/' + recordsDate + '/' + record.id)
                 i.fa.fa-pencil-square-o.fa-lg
                 span  Edit
               a(style='padding-right:10px;' href='/record/delete/' + recordsDate + '/' + record.id)
