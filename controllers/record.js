@@ -18,6 +18,39 @@ function getStartOfDayMilliseconds(date){
   return time.getTime();
 }
 
+//to convert milliseconds to time of day for a given date
+//NB might as well use Date.getHours() and Date.getMinutes()
+// function getTimeOfDay(time, date){
+//   let min = (time - getStartOfDayMilliseconds(date)) / 60000;
+//   let result = {};
+//   result.minute = min % 60;
+//   result.hour = (min - result.minute) / 60;
+//   return result;
+// }
+
+//split up topics and weed out one's not to be displayed
+//TODO check these are dynamodb-formatted topics
+function cleanedTopics(topics) {
+  let target = {
+    foods: [],
+    insulins: [],
+  };
+
+  topics.Items.forEach(function(topic){
+    if (topic.attrs){
+      if (topic.attrs.display) {
+        if (topic.attrs.class.toLowerCase() === 'food') {
+          target.foods.push(topic.attrs);
+        } else if (topic.attrs.class.toLowerCase() === 'insulin') {
+          target.insulins.push(topic.attrs);
+        }
+      }
+    }
+  });
+
+  return target;
+}
+
 module.exports = function(app) {
 
   app.get('/record', function(req, res, next) {
@@ -44,14 +77,26 @@ module.exports = function(app) {
       .loadAll()
       .exec(function(err, actions) {
         if (err) return next(err);
+
+        let unsorted = actions.Items.map(function(action) {
+          if (action.attrs && action.attrs.time) {
+            let time = new Date(action.attrs.time);
+            action.attrs.minute = time.getMinutes();
+            action.attrs.hour = time.getHours();
+          }
+
+          return action.attrs;
+        });
+
         res.render('record/index', {
           breadcrumbs: [{
               text: 'Records',
+              href: '/record',
             },
           ],
           //_csrf: req.csrfToken(),
-          records: actions.Items.map(function(action) {
-            return action.attrs;
+          records: unsorted.sort(function(a, b) {
+            return a.time - b.time;
           }),
           recordsDate: dateToGet,
         });
@@ -65,21 +110,6 @@ module.exports = function(app) {
       .exec(function(err, topics) {
         if (err) return next(err);
 
-        let splitTopics = {
-          foods: [],
-          insulins: [],
-        };
-
-        topics.Items.forEach(function(topic){
-          if (topic.attrs){
-            if (topic.attrs.class.toLowerCase() === 'food') {
-              splitTopics.foods.push(topic.attrs);
-            } else if (topic.attrs.class.toLowerCase() === 'insulin') {
-              splitTopics.insulins.push(topic.attrs);
-            }
-          }
-        });
-
         res.render('record/form', {
           //_csrf: req.csrfToken(),
           breadcrumbs: [{
@@ -92,7 +122,7 @@ module.exports = function(app) {
           action: {
             class: req.params.class,
           },
-          topics: splitTopics,
+          topics: cleanedTopics(topics),
 
           location: '/record/update',
           buttonText: 'Add',
@@ -102,7 +132,7 @@ module.exports = function(app) {
   });
 
   app.post('/record/update', function(req, res, next) {
-    console.log('req received ', req.body);
+    //console.log('req received ', req.body);
 
     let info = {
       class: req.body.classText,
@@ -161,10 +191,7 @@ module.exports = function(app) {
   app.get('/record/edit/:class/:date/:id', function(req, res, next) {
 
     let actionToPassIn;
-    let topicsToPassIn = {
-      foods: [],
-      insulins: [],
-    };
+    let topicsToPassIn;
 
     async.parallel([
       function getTopics(cb) {
@@ -174,21 +201,13 @@ module.exports = function(app) {
           .exec(function(err, topics) {
             if (err) return next(err);
 
-            topics.Items.forEach(function(topic){
-              if (topic.attrs){
-                if (topic.attrs.class.toLowerCase() === 'food') {
-                  topicsToPassIn.foods.push(topic.attrs);
-                } else if (topic.attrs.class.toLowerCase() === 'insulin') {
-                  topicsToPassIn.insulins.push(topic.attrs);
-                }
-              }
-            });
+            topicsToPassIn = cleanedTopics(topics);
 
             cb();
           });
       },
 
-      function getActions(cb) {
+      function getAction(cb) {
         Action.get(req.params.date, req.params.id, function(err, action) {
           if (err) return cb(err);
 
@@ -196,9 +215,9 @@ module.exports = function(app) {
 
           actionToPassIn = action.attrs;
           actionToPassIn.class = req.params.class;
-          let min = (actionToPassIn.time - getStartOfDayMilliseconds(actionToPassIn.date)) / 60000;
-          actionToPassIn.minute = min % 60;
-          actionToPassIn.hour = (min - actionToPassIn.minute) / 60;
+          let time = new Date(actionToPassIn.time);
+          actionToPassIn.minute = time.getMinutes();
+          actionToPassIn.hour = time.getHours();
 
           cb();
         });
@@ -206,7 +225,7 @@ module.exports = function(app) {
     ], function(err) {
       if (err) return next(err);
 
-      console.log('action passed in ', actionToPassIn);
+      //console.log('action passed in ', actionToPassIn);
 
       res.render('record/form', {
         //_csrf: req.csrfToken(),

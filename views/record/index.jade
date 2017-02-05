@@ -4,7 +4,7 @@ block content
   .container
     .row
       .col-sm-12
-        h1 Record Daily Activity
+        h1 Daily Activity Records
         hr
         div 
     .row
@@ -20,8 +20,14 @@ block content
             a.btn.btn-info(href='/record/add/Reading') Add a Reading        
     hr
     .row
-      .col-sm-5
-        h4 Activity on #{recordsDate}
+      .col-sm-2(style='padding-right: 0px; ')
+        h4 Date (DD-MM-YYYY)
+      .col-sm-4(style='padding-left: 0px; ')
+        form(onSubmit='getRecordsForDate();')
+          .col-sm-6
+            input.form-control(type='text', name='date', id='date', value=recordsDate)
+          .col-sm-3
+            input.btn.btn-primary(type='submit', value='Change Date')
     table#activity(style='width:100%; ')
       thead
         tr
@@ -34,7 +40,7 @@ block content
         each record in records
           tr
             td
-              span= record.time
+              span= record.hour + ':' + record.minute
             td
               span= record.class
             td
@@ -61,4 +67,8 @@ block content
         border-bottom: 1px solid;
         text-align: center;
         padding: 8px;
+      }
+    script.
+      function getRecordsForDate(){
+        location.href = '/record?date=' + document.getElementById('date').value;
       }
