@@ -22,17 +22,14 @@ module.exports = function(app) {
         if (err) return next(err);
 
         let splitTopics = {
-          foods: [],
-          insulins: [],
+          food: [],
+          insulin: [],
+          reason: [],
         };
 
         topics.Items.forEach(function(topic){
           if (topic.attrs){
-            if (topic.attrs.class.toLowerCase() === 'food') {
-              splitTopics.foods.push(topic.attrs);
-            } else if (topic.attrs.class.toLowerCase() === 'insulin') {
-              splitTopics.insulins.push(topic.attrs);
-            }
+            splitTopics[topic.attrs.class.toLowerCase()].push(topic.attrs);
           }
         });
 
@@ -57,33 +54,18 @@ module.exports = function(app) {
         if (!topic || !topic.attrs) return next(new Error('no topic with attributes found'));
 
         //console.log('topic', topic.attrs);
-        if (topic.attrs.class.toLowerCase() === 'food'){
-          res.render('topic/form', {
-            breadcrumbs: [{
-                text: 'Topics',
-                href: '/topics',
-              }, {
-                text: 'Add a Food',
-              },
-            ],
-            //_csrf: req.csrfToken(),
-            topic: topic.attrs,
-            location: '/topics/add',
-          });
-        } else if (topic.attrs.class.toLowerCase() === 'insulin'){
-          res.render('topic/form', {
-            breadcrumbs: [{
-                text: 'Topics',
-                href: '/topics',
-              }, {
-                text: 'Add an Insulin',
-              },
-            ],
-            //_csrf: req.csrfToken(),
-            topic: topic.attrs,
-            location: '/topics/add',
-          });
-        }
+        res.render('topic/form', {
+          breadcrumbs: [{
+              text: 'Topics',
+              href: '/topics',
+            }, {
+              text: topic.attrs.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.attrs.class,
+            },
+          ],
+          //_csrf: req.csrfToken(),
+          topic: topic.attrs,
+          location: '/topics/add',
+        });
       });
     } else {
       let topic = {
@@ -98,7 +80,7 @@ module.exports = function(app) {
             text: 'Topics',
             href: '/topics',
           }, {
-            text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a Food',
+            text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.class,
           },
         ],
         //_csrf: req.csrfToken(),
@@ -113,16 +95,17 @@ module.exports = function(app) {
     let topic = {
       name: req.body.name,
       type: req.body.type,
-      unit: req.body.unit,
       class: req.body.classText,
     };
 
     if (topic.class.toLowerCase() === 'food') {
       topic.class = 'Food';
       topic.calories = req.body.calories;
+      topic.unit = req.body.unit;
     } else if (topic.class.toLowerCase() === 'insulin') {
       topic.class = 'Insulin';
-      topic.unit = 'unit';
+    } else if (topic.class.toLowerCase() === 'reason') {
+      topic.class = 'Reason';
     }
 
     (new Topic(topic)).save(function(err) {
@@ -153,44 +136,4 @@ module.exports = function(app) {
     //   res.redirect('/topics');
     // });
   });
-
-//TODO turn into add, if applicable
-  // app.post('/topics/edit', function(req, res, next) {
-  //   // knowledge.log({
-  //   //   app: APP_NAME,
-  //   //   action: 'edit topic',
-  //   //   value: {
-  //   //     topicId: req.body.id,
-  //   //   },
-  //   //   req,
-  //   // });
-
-  //   req.body.applicationType = req.body.applicationTypePrefix + req.body.applicationType;
-  //   req.body.resourceType = req.body.resourceTypePrefix + req.body.resourceType;
-  //   req.body.resourceName = req.body.resourceNamePrefix + req.body.resourceName;
-  //   req.body.event = req.body.eventPrefix + req.body.event;
-
-  //   delete req.body.applicationTypePrefix;
-  //   delete req.body.resourceTypePrefix;
-  //   delete req.body.resourceNamePrefix;
-  //   delete req.body.eventPrefix;
-
-  //   Topic.get(req.body.id, function(err, topic) {
-  //     if (err) return next(err);
-  //     if (!topic) return next(new Error('no topic found'));
-  //     let changed = diff(topic.attrs, req.body);
-  //     _.forEach(changed, function(value, key) {
-  //       //if (key === '_csrf') return;
-  //       if (value === '') return;
-  //       let updateObj = {};
-  //       updateObj[key] = value;
-  //       topic.set(updateObj);
-  //     });
-
-  //     topic.update(function(err) {
-  //       if (err) return next(err);
-  //       res.redirect('/topics');
-  //     });
-  //   });
-  // });
 };

@@ -2,7 +2,7 @@ extends ../layouts/default
 
 block content
   .container
-    h3(style='margin-bottom: 20px; ') Add #{topic.class}.
+    h3(style='margin-bottom: 20px; ') Add #{topic.class}
     form(name='add', action=location, method='post')
       input(type='hidden', name='classText', value=topic.class)
       .row.form-group
@@ -16,12 +16,14 @@ block content
         .col-sm-3
           select.form-control(name='type' id='type')
             option(value='') Select the type of #{topic.class.toLowerCase()}.
-            option(value='snack' selected=topic.type==='snack' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Snack
+            option(value='treat' selected=topic.type==='treat' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Treat
             option(value='protein' selected=topic.type==='protein' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Protein
             option(value='starch' selected=topic.type==='starch' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Starch
             option(value='veg' selected=topic.type==='veg' style=topic.class.toLowerCase()==='food' ? '' : 'display: none;') Fruit or Vegetable
-            option(value='fast' selected=topic.type==='fast' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Fast-acting
-            option(value='slow' selected=topic.type==='slow' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Slow-acting
+            option(value='fast-acting' selected=topic.type==='fast' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Fast-acting
+            option(value='slow-acting' selected=topic.type==='slow' style=topic.class.toLowerCase()==='insulin' ? '' : 'display: none;') Slow-acting
+            option(value='scheduled' selected=topic.type==='scheduled' style=topic.class.toLowerCase()==='reason' ? '' : 'display: none;') Scheduled
+            option(value='unscheduled' selected=topic.type==='unscheduled' style=topic.class.toLowerCase()==='reason' ? '' : 'display: none;') Unscheduled
       .row.form-group(style=topic.class.toLowerCase()==='food' ? '' : 'display: none;')
         .col-sm-2
           label Unit

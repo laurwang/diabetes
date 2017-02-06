@@ -25,14 +25,14 @@ block content
           label Amount
         .col-sm-3
           input.form-control(type='text', name='quantity', value=action.quantity)
-      .row.form-group(style=action.class.toLowerCase()==='dosage' ? '' : 'display: none; ')
+      .row.form-group(style=action.class.toLowerCase()==='meal' ? 'display: none; ' : '')
         .col-sm-2
-          label Insulin
+          label #{typeText}
         .col-sm-3
-          select.form-control(name='insulin' id='insulin')
-            option(value='') Select the type of Insulin.
-            each drug in topics.insulins
-              option(selected=action.insulinId===drug.id value='#{drug.id}|#{drug.type}') #{drug.name} (#{drug.type})
+          select.form-control(name='#{typeText}' id='#{typeText}')
+            option(value='') Select the #{typeText}.
+            each topic in topics[typeText.toLowerCase()]
+              option(selected=action.topicId===topic.id value='#{topic.id}|#{topic.type}') #{topic.name} (#{topic.type})
       .row
         .col-sm-12
           br

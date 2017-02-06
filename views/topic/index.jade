@@ -8,13 +8,13 @@ block content
         hr
         div 
     .row
-      .col-sm-4
-        .col-sm-6
-          span.pull-left
-            a.btn.btn-info(href='/topics/add/Food') Add a Food
-        .col-sm-6
-          span.pull-right
-            a.btn.btn-info(href='/topics/add/Insulin') Add an Insulin
+      .col-sm-6
+        .col-sm-4
+          a.btn.btn-info(href='/topics/add/Food') Add a Food
+        .col-sm-4
+          a.btn.btn-info(href='/topics/add/Insulin') Add an Insulin
+        .col-sm-4
+          a.btn.btn-info(href='/topics/add/Reason') Add a Reason
     hr
     .row
       .col-sm-5
@@ -26,7 +26,32 @@ block content
           th Type
           th &nbsp;
       tbody
-        each topic in topics.insulins
+        each topic in topics.insulin
+          tr
+            td
+              span= topic.name
+            td
+              span= topic.type
+            td
+              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
+                i.fa.fa-pencil-square-o.fa-lg
+                span  Copy
+              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+                i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
+                i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
+                span= topic.display ? ' On' : ' Off'
+    hr
+    .row
+      .col-sm-5
+        h4 Reasons
+    table#reason(style='width:100%; ')
+      thead
+        tr
+          th Name
+          th Type
+          th &nbsp;
+      tbody
+        each topic in topics.reason
           tr
             td
               span= topic.name
@@ -53,7 +78,7 @@ block content
           th Calories
           th &nbsp;
       tbody
-        each topic in topics.foods
+        each topic in topics.food
           tr
             td
               span= topic.name
@@ -119,11 +144,11 @@ block content
       .itemTitle {
         width: 300px;
       }
-      #insulin td {
+      #insulin td, #reason td {
         text-align: center;
         padding: 8px;
       }
-      #insulin th {
+      #insulin th, #reason th {
         border-bottom: 1px solid;
         text-align: center;
         padding: 8px;

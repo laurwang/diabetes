@@ -32,23 +32,29 @@ function getStartOfDayMilliseconds(date){
 //TODO check these are dynamodb-formatted topics
 function cleanedTopics(topics) {
   let target = {
-    foods: [],
-    insulins: [],
+    food: [],
+    insulin: [],
+    reason: [],
   };
 
   topics.Items.forEach(function(topic){
-    if (topic.attrs){
-      if (topic.attrs.display) {
-        if (topic.attrs.class.toLowerCase() === 'food') {
-          target.foods.push(topic.attrs);
-        } else if (topic.attrs.class.toLowerCase() === 'insulin') {
-          target.insulins.push(topic.attrs);
-        }
-      }
+    if (topic.attrs && topic.attrs.display) {
+      target[topic.attrs.class.toLowerCase()].push(topic.attrs);
     }
   });
 
   return target;
+}
+
+function typeForRecordClass(classText) {
+  classText = classText.toLowerCase();
+  if (classText === 'dosage') {
+    return 'Insulin';
+  } else if (classText === 'reading') {
+    return 'Reason';
+  } else {
+    return '';
+  }
 }
 
 module.exports = function(app) {
@@ -126,6 +132,7 @@ module.exports = function(app) {
 
           location: '/record/update',
           buttonText: 'Add',
+          typeText: typeForRecordClass(req.params.class),
           app: APP_NAME,
         });
       });
@@ -148,11 +155,12 @@ module.exports = function(app) {
       //     snack: joi.number().integer(),
       // }).optional(),
       // mealFoods: joi.array().items(joi.string()).single().optional(),//id<space>calories
-    } else if (info.class.toLowerCase() === 'dosage') {
-      let insulin = req.body.insulin.split('|');
-      console.log('received insulin ', insulin);
-      info.insulinType = insulin[1];
-      info.insulinId = insulin[0];
+    } else {
+      let recordType = typeForRecordClass(info.class);
+      let topic = req.body[recordType].split('|');
+      console.log('received topic ', topic);
+      info.type = topic[1];
+      info.topicId = topic[0];
     }
 
     if (req.body.id) {
@@ -241,6 +249,7 @@ module.exports = function(app) {
 
         location: '/record/update',
         buttonText: 'Update',
+        typeText: typeForRecordClass(req.params.class),
         app: APP_NAME,
       });
     });
