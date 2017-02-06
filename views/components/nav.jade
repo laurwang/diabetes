@@ -1,110 +1,19 @@
 //- NAVBAR COMPONENT
-//------------------
-//- This should be included on all web app applications. It includes the banner
-//- indicating the NODE_ENV environment, the ability for an internal user to 
-//- select their partner, and the application breadcrumb support.
-
-- if (NODE_ENV && NODE_ENV !== 'production')
-  div(style='padding:2px 3px;font-size:8px;background:#{NODE_ENV == "staging" ? "#ffc107" : "#4CAF50"}').text-right= 'Server Environment: ' + NODE_ENV
 
 #navbar.navbar.navbar-inverse.depth-1
   .collapse.navbar-collapse
     .nav.navbar-nav
       a(href='/')
         img#logo(
-          src='/public/imgs/pi-logo-white-flat.png',
-          alt='Point Inside',
+          src='/public/imgs/eating.jpg',
+          alt='Diabetes Logs',
           )
       - if (breadcrumbs)
         - each crumb in breadcrumbs
-          img(src='/public/imgs/breadcrumb-arrow.svg').crumb-img
+          img(src='/public/imgs/breadcrumb-next.svg').crumb-img
           .crumb
             - if (crumb.href)
               a(href= crumb.href)
                 = crumb.text
             - else
               = crumb.text
-            
-    - if (user)
-      .nav.navbar-nav.navbar-right
-        - if (user.allowedPartners.length > 1)
-          li.dropdown#partner-select
-            a(
-              href="#",
-              class="dropdown-trigger",
-              data-target="#partner-menu",
-              role="button",
-              aria-haspopup="true",
-              aria-expanded="false",
-              )#persona 
-              span.partner-name= user.activePartner
-              | &nbsp;
-              i.fa.fa-caret-down
-                
-            ul.dropdown-menu#partner-menu
-              - each partner in user.allowedPartners
-                li
-                  a(style='cursor: pointer;')
-                    =partner
-
-        li.dropdown
-          a(
-            href="#",
-            class="dropdown-trigger",
-            data-target="#user-menu",
-            role="button",
-            aria-haspopup="true",
-            aria-expanded="false",
-            data-userId=user.id,
-            data-email=user.email,
-            )#persona
-            - if (user.photo)
-              img(src= user.photo).img-circle
-            = user.fullname
-            | &nbsp;
-            i.fa.fa-caret-down
-          ul.dropdown-menu#user-menu
-            - if (user.roles && user.roles.indexOf('admin') >= 0)
-              li
-                a(href='/preferences') Preferences
-            li
-              a(href='/logout') Logout
-              
-script.
-  var dropdownTriggers = document.querySelectorAll('.dropdown-trigger');
-  for (var i in dropdownTriggers) {
-    dropdownTriggers[i].onclick = function(e) {
-      e.preventDefault();
-
-      var menu = document.querySelector(this.getAttribute('data-target'));
-
-      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-      
-      return false;
-    }
-  }
-  
-  var partnerSelect = document.querySelectorAll('#partner-menu li')
-  for (var n in partnerSelect) {
-    partnerSelect[n].onclick = function() {
-      var partnerName = this.innerText.replace(/\r?\n/g, '');
-
-      if (!partnerName) return false;
-        
-      var http = new XMLHttpRequest();
-      http.open('POST', '/preferences', true);
-
-      //Send the proper header information along with the request
-      http.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-
-      http.onreadystatechange = function() {
-        if(http.readyState == 4 && http.status == 200) {
-          window.location.href = window.location.pathname
-        }        
-      }
-
-      http.send(JSON.stringify({
-        activePartner: partnerName,
-      }));
-    }
-  }

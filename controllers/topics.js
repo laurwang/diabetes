@@ -35,7 +35,7 @@ module.exports = function(app) {
 
         res.render('topic', {
           breadcrumbs: [{
-              text: 'Topics',
+              text: 'Choices',
             },
           ],
           //_csrf: req.csrfToken(),
@@ -56,7 +56,7 @@ module.exports = function(app) {
         //console.log('topic', topic.attrs);
         res.render('topic/form', {
           breadcrumbs: [{
-              text: 'Topics',
+              text: 'Choices',
               href: '/topics',
             }, {
               text: topic.attrs.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.attrs.class,
@@ -77,7 +77,7 @@ module.exports = function(app) {
 
       res.render('topic/form', {
         breadcrumbs: [{
-            text: 'Topics',
+            text: 'Choices',
             href: '/topics',
           }, {
             text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.class,
