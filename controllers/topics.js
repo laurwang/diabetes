@@ -119,7 +119,7 @@ module.exports = function(app) {
       if (err) return next(err);
       if (!topic || !topic.attrs) return next(new Error('No topic with attributes found.'));
 
-      console.log('previous setting for display: ', topic.attrs.display);//assume nonexistent equals false for isOff
+      //console.log('previous setting for display: ', topic.attrs.display);//assume nonexistent equals false for isOff
       let updateObj = {
         display: !topic.attrs.display,
       };
