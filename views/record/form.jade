@@ -20,12 +20,20 @@ block content
             input.form-control(type='text', name='hour', value=action.hour, placeholder='Hour (0-23)')
           .col-sm-6(style='padding-right: 0px; ')
             input.form-control(type='text', name='minute', value=action.minute, placeholder='Min (0-59)')
-      .row.form-group(style=action.class.toLowerCase()==='meal' ? 'display: none; ' : '')
+      .row.form-group(style=action.class.toLowerCase()==='meal' ? '' : 'display: none; ')
+        .col-sm-2
+          label Foods in meal (TODO multiple)
+        .col-sm-3
+          select.form-control(name='eaten' id='eaten')
+            option(value='') Select the food (TODO enter units).
+            each topic in topics.food
+              option(selected=action.foods[0].id===topic.id value='#{topic.type}|#{topic.id}|#{topic.calories}') #{topic.name} (#{topic.type})
+      .row.form-group
         .col-sm-2
           label Amount
         .col-sm-3
-          input.form-control(type='text', name='quantity', value=action.quantity)
-      .row.form-group(style=action.class.toLowerCase()==='meal' ? 'display: none; ' : '')
+          input.form-control(type='text', name='quantity', value=action.quantity, disabled=action.class.toLowerCase()==='meal')
+      .row.form-group
         .col-sm-2
           label #{typeText}
         .col-sm-3
