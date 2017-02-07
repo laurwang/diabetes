@@ -22,12 +22,15 @@ block content
             input.form-control(type='text', name='minute', value=action.minute, placeholder='Min (0-59)')
       .row.form-group(style=action.class.toLowerCase()==='meal' ? '' : 'display: none; ')
         .col-sm-2
-          label Foods in meal (TODO multiple)
-        .col-sm-3
-          select.form-control(name='eaten' id='eaten')
-            option(value='') Select the food (TODO enter units).
-            each topic in topics.food
-              option(selected=action.foods[0].id===topic.id value='#{topic.type}|#{topic.id}|#{topic.calories}') #{topic.name} (#{topic.type})
+          label Foods eaten
+        .col-sm-4(id='dynamicInput')
+          each food in action.foods
+            select.form-control(type='text', name='eaten[]')
+              option(value='') Select the food.
+              each topic in topics.food
+                option(selected=food.id===topic.id value='#{topic.type}|#{topic.id}|#{topic.calories}') #{topic.name} (#{topic.type} - one #{topic.unit})
+            input.form-control(type='text', name='unitsEaten[]', value=food.units)
+        input.btn.btn-primary(type='button', value='Another food' onClick="addInput('dynamicInput');")
       .row.form-group
         .col-sm-2
           label Amount
@@ -49,3 +52,19 @@ block content
           a.btn(href="/record") Cancel
           &nbsp;
           input.btn.btn-primary(type='submit', value=buttonText)
+    script.
+      var topicFoods = !{JSON.stringify(topics.food)};
+      function addInput(divName){
+        var temp = "<select class='form-control' type='text' name='eaten[]'>"
+        + "<option value=''>Select the food."
+        + "</option>";
+        topicFoods.forEach(function(topic) {
+          temp = temp + "<option value='" + (topic.type + "|" + topic.id + "|" + topic.calories) + "'>" + topic.name + " (" + topic.type + ")</option>";
+        });
+        temp = temp + "</select>"
+        + "<input class='form-control' type='text' name='unitsEaten[]'></input>";
+        console.log(temp);
+        var newdiv = document.createElement('div');
+        newdiv.innerHTML = temp;
+        document.getElementById(divName).appendChild(newdiv);
+      }

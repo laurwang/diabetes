@@ -92,13 +92,14 @@ function appendMealInfo(info, eatenThings, amounts){
   };
   info.mealFoods = [];
 
-  //for each food--TODO handle array
-    let eatenThing = eatenThings[0].split('|');//TOD0 check data format expected: [type, id, calories per unit]
-    let unitsEaten = amounts[0];
+  eatenThings.forEach(function(thing, index){
+    let eatenThing = thing.split('|');//TOD0 check data format expected: [type, id, calories per unit]
+    let unitsEaten = amounts[index];
     let totalCal = Math.round(eatenThing[2] * unitsEaten);
     info.mealCalories[eatenThing[0]] = info.mealCalories[eatenThing[0]] + totalCal;
     info.mealFoods.push(eatenThing[1] + '|' + unitsEaten + '|' + totalCal);
     info.quantity += totalCal;
+  });
 }
 
 module.exports = function(app) {
@@ -200,8 +201,8 @@ module.exports = function(app) {
     info.topicId = topic[0];
 
     if (info.class.toLowerCase() === 'meal') {
-      //appendMealInfo(info, req.body.eaten, req.body.unitsEaten);//TODO req.body.unitEaten for each member of array req.body.eaten
-      appendMealInfo(info, [req.body.eaten], [1]);
+      appendMealInfo(info, req.body.eaten, req.body.unitsEaten);//TODO req.body.unitsEaten for each member of array req.body.eaten
+      //appendMealInfo(info, [req.body.eaten], [1]);
     }
 
     if (req.body.id) {
@@ -269,16 +270,23 @@ module.exports = function(app) {
           let time = new Date(actionToPassIn.time);
           actionToPassIn.minute = time.getMinutes();
           actionToPassIn.hour = time.getHours();
-          actionToPassIn.foods = actionToPassIn.mealFoods.map(function(food){
-            let temp = food.split('|');
-            return {
-              id: temp[0],
-              unit: parseFloat(temp[1]),
-              calories: parseInt(temp[2], 10),
-            };
-          });
-          delete actionToPassIn.mealFoods;
-          delete actionToPassIn.mealCalories;
+
+          if (actionToPassIn.class.toLowerCase() === 'meal') {
+            actionToPassIn.foods = actionToPassIn.mealFoods.map(function(food){
+              let temp = food.split('|');
+              return {
+                id: temp[0],
+                units: parseFloat(temp[1]),
+                calories: parseInt(temp[2], 10),
+              };
+            });
+            delete actionToPassIn.mealFoods;
+            delete actionToPassIn.mealCalories;
+          } else {
+            actionToPassIn.foods = [
+              {},
+            ];
+          }
 
           cb();
         });
