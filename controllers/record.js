@@ -40,8 +40,18 @@ function getStartOfDayMilliseconds(date){
   return time.getTime();
 }
 
+function getTimeOfDay(millis) {
+  let time = new Date(millis);
+  let result = {};
+  result.minute = time.getMinutes();
+  result.hour = time.getHours();
+  if (result.minute < 10) {
+    result.minute = '0' + result.minute;
+  }
+  return result;
+}
+
 //to convert milliseconds to time of day for a given date
-//NB might as well use Date.getHours() and Date.getMinutes()
 // function getTimeOfDay(time, date){
 //   let min = (time - getStartOfDayMilliseconds(date)) / 60000;
 //   let result = {};
@@ -93,12 +103,14 @@ function appendMealInfo(info, eatenThings, amounts){
   info.mealFoods = [];
 
   eatenThings.forEach(function(thing, index){
-    let eatenThing = thing.split('|');//TOD0 check data format expected: [type, id, calories per unit]
     let unitsEaten = amounts[index];
-    let totalCal = Math.round(eatenThing[2] * unitsEaten);
-    info.mealCalories[eatenThing[0]] = info.mealCalories[eatenThing[0]] + totalCal;
-    info.mealFoods.push(eatenThing[1] + '|' + unitsEaten + '|' + totalCal);
-    info.quantity += totalCal;
+    if (unitsEaten > 0) {
+      let eatenThing = thing.split('|');//TOD0 check data format expected: [type, id, calories per unit]
+      let totalCal = Math.round(eatenThing[2] * unitsEaten);
+      info.mealCalories[eatenThing[0]] = info.mealCalories[eatenThing[0]] + totalCal;
+      info.mealFoods.push(eatenThing[1] + '|' + unitsEaten + '|' + totalCal);
+      info.quantity += totalCal;
+    }
   });
 }
 
@@ -131,9 +143,9 @@ module.exports = function(app) {
 
         let unsorted = actions.Items.map(function(action) {
           if (action.attrs && action.attrs.time) {
-            let time = new Date(action.attrs.time);
-            action.attrs.minute = time.getMinutes();
-            action.attrs.hour = time.getHours();
+            let time = getTimeOfDay(action.attrs.time);
+            action.attrs.minute = time.minute;
+            action.attrs.hour = time.hour;
           }
 
           return action.attrs;
@@ -201,8 +213,7 @@ module.exports = function(app) {
     info.topicId = topic[0];
 
     if (info.class.toLowerCase() === 'meal') {
-      appendMealInfo(info, req.body.eaten, req.body.unitsEaten);//TODO req.body.unitsEaten for each member of array req.body.eaten
-      //appendMealInfo(info, [req.body.eaten], [1]);
+      appendMealInfo(info, req.body.eaten, req.body.unitsEaten);
     }
 
     if (req.body.id) {
@@ -267,9 +278,9 @@ module.exports = function(app) {
 
           actionToPassIn = action.attrs;
           actionToPassIn.class = req.params.class;
-          let time = new Date(actionToPassIn.time);
-          actionToPassIn.minute = time.getMinutes();
-          actionToPassIn.hour = time.getHours();
+          let time = getTimeOfDay(actionToPassIn.time);
+          actionToPassIn.minute = time.minute;
+          actionToPassIn.hour = time.hour;
 
           if (actionToPassIn.class.toLowerCase() === 'meal') {
             actionToPassIn.foods = actionToPassIn.mealFoods.map(function(food){

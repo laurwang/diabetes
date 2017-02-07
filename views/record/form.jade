@@ -23,14 +23,18 @@ block content
       .row.form-group(style=action.class.toLowerCase()==='meal' ? '' : 'display: none; ')
         .col-sm-2
           label Foods eaten
-        .col-sm-4(id='dynamicInput')
+        .col-sm-6(style='padding-left: 0px; ' id='dynamicInput')
           each food in action.foods
-            select.form-control(type='text', name='eaten[]')
-              option(value='') Select the food.
-              each topic in topics.food
-                option(selected=food.id===topic.id value='#{topic.type}|#{topic.id}|#{topic.calories}') #{topic.name} (#{topic.type} - one #{topic.unit})
-            input.form-control(type='text', name='unitsEaten[]', value=food.units)
-        input.btn.btn-primary(type='button', value='Another food' onClick="addInput('dynamicInput');")
+            .col-sm-8
+              select.form-control(type='text', name='eaten[]')
+                option(value='') Select the food.
+                each topic in topics.food
+                  option(selected=food.id===topic.id value='#{topic.type}|#{topic.id}|#{topic.calories}') #{topic.name} (#{topic.type} - one #{topic.unit})
+            .col-sm-2
+              input.form-control(type='text', name='unitsEaten[]', value=food.units)
+      .row(style='margin-bottom: 15px; ' + (action.class.toLowerCase()==='meal' ? '' : 'display: none; '))
+        .col-sm-2.col-sm-offset-2
+          input.btn.btn-secondary(type='button', value='More' onClick="addInput('dynamicInput');")
       .row.form-group
         .col-sm-2
           label Amount
@@ -55,14 +59,14 @@ block content
     script.
       var topicFoods = !{JSON.stringify(topics.food)};
       function addInput(divName){
-        var temp = "<select class='form-control' type='text' name='eaten[]'>"
+        var temp = "<div class='col-sm-8'><select class='form-control' type='text' name='eaten[]'>"
         + "<option value=''>Select the food."
         + "</option>";
         topicFoods.forEach(function(topic) {
           temp = temp + "<option value='" + (topic.type + "|" + topic.id + "|" + topic.calories) + "'>" + topic.name + " (" + topic.type + ")</option>";
         });
-        temp = temp + "</select>"
-        + "<input class='form-control' type='text' name='unitsEaten[]'></input>";
+        temp = temp + "</select></div>"
+        + "<div class='col-sm-2'><input class='form-control' type='text' name='unitsEaten[]'></input></div>";
         console.log(temp);
         var newdiv = document.createElement('div');
         newdiv.innerHTML = temp;
