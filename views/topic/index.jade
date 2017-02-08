@@ -10,11 +10,11 @@ block content
     .row
       .col-sm-6
         .col-sm-4
-          a.btn.btn-info(href='/topics/add/Food') Add a Food
+          a.btn.btn-info(href='#{home}/add/Food') Add a Food
         .col-sm-4
-          a.btn.btn-info(href='/topics/add/Insulin') Add an Insulin
+          a.btn.btn-info(href='#{home}/add/Insulin') Add an Insulin
         .col-sm-4
-          a.btn.btn-info(href='/topics/add/Reason') Add a Reason
+          a.btn.btn-info(href='#{home}/add/Reason') Add a Reason
     hr
     .row
       .col-sm-5
@@ -33,10 +33,10 @@ block content
             td
               span= topic.type
             td
-              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/add/' + topic.class + '?id=' + topic.id)
                 i.fa.fa-pencil-square-o.fa-lg
                 span  Copy
-              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/onoff/' + topic.id)
                 i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
                 i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
                 span= topic.display ? ' On' : ' Off'
@@ -58,10 +58,10 @@ block content
             td
               span= topic.type
             td
-              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/add/' + topic.class + '?id=' + topic.id)
                 i.fa.fa-pencil-square-o.fa-lg
                 span  Copy
-              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/onoff/' + topic.id)
                 i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
                 i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
                 span= topic.display ? ' On' : ' Off'
@@ -89,10 +89,10 @@ block content
             td
               span= topic.calories
             td
-              a(style='padding-right:10px;' href='/topics/add/' + topic.class + '?id=' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/add/' + topic.class + '?id=' + topic.id)
                 i.fa.fa-pencil-square-o.fa-lg
                 span  Copy
-              a(style='padding-right:10px;' href='/topics/onoff/' + topic.id)
+              a(style='padding-right:10px;' href='#{home}/onoff/' + topic.id)
                 i.fa.fa-toggle-on.fa-lg(style=topic.display ? '' : 'display: none;')
                 i.fa.fa-toggle-off.fa-lg(style=topic.display ? 'display: none;' : '')
                 span= topic.display ? ' On' : ' Off'

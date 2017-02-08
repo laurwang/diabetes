@@ -9,6 +9,8 @@ const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
 const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
+const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME ? process.env.HOME : '');
 
 const MEALS = [
   {
@@ -155,7 +157,7 @@ module.exports = function(app) {
         res.render('record/index', {
           breadcrumbs: [{
               text: 'Records',
-              href: HOME,//TODO might need stage
+              href: FULL_HOME,
             },
           ],
           //_csrf: req.csrfToken(),
@@ -163,6 +165,8 @@ module.exports = function(app) {
             return a.time - b.time;
           }),
           recordsDate: dateToGet,
+          home: FULL_HOME,
+          navhome: NAV_HOME,
         });
       });
   });
@@ -178,7 +182,7 @@ module.exports = function(app) {
           //_csrf: req.csrfToken(),
           breadcrumbs: [{
               text: 'Records',
-              href: HOME,//TODO might need stage
+              href: FULL_HOME,
             }, {
               text: 'Add a ' + req.params.class,
             },
@@ -191,9 +195,11 @@ module.exports = function(app) {
           },
           topics: cleanedTopics(topics),
 
-          location: HOME + '/update',//TODO might need stage
+          location: FULL_HOME + '/update',
           buttonText: 'Add',
           typeText: typeForRecordClass(req.params.class),
+          home: FULL_HOME,
+          navhome: NAV_HOME,
           app: APP_NAME,
         });
       });
@@ -236,7 +242,7 @@ module.exports = function(app) {
 
         action.update(function(err) {
           if (err) return next(err);
-          res.redirect(HOME);
+          res.redirect(FULL_HOME);
         });
       });
     } else {
@@ -247,7 +253,7 @@ module.exports = function(app) {
 
       action.save(function(err) {
         if (err) return next(err);
-        res.redirect(HOME);
+        res.redirect(FULL_HOME);
       });
     }
   });
@@ -312,7 +318,7 @@ module.exports = function(app) {
         //_csrf: req.csrfToken(),
         breadcrumbs: [{
             text: 'Records',
-            href: HOME,//TODO might need stage
+            href: FULL_HOME,
           }, {
             text: 'Edit a ' + req.params.class,
           },
@@ -320,9 +326,11 @@ module.exports = function(app) {
         action: actionToPassIn,
         topics: topicsToPassIn,
 
-        location: HOME + '/update',//TODO might need stage
+        location: FULL_HOME + '/update',
         buttonText: 'Update',
         typeText: typeForRecordClass(req.params.class),
+        home: FULL_HOME,
+        navhome: NAV_HOME,
         app: APP_NAME,
       });
     });
@@ -331,7 +339,7 @@ module.exports = function(app) {
   app.get(HOME + '/delete/:date/:id', function(req, res, next) {
     Action.destroy(req.params.date, req.params.id, function(err) {
       if (err) return next(err);
-      res.redirect(HOME);
+      res.redirect(FULL_HOME);
     });
   });
 };

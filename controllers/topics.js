@@ -6,6 +6,8 @@ const Topic = require('../lib/topic');
 
 const APP_NAME = 'topics';
 const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
+const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME ? process.env.HOME : '');
 
 const DEFAULT = [
   'name',
@@ -41,6 +43,8 @@ module.exports = function(app) {
           ],
           //_csrf: req.csrfToken(),
           topics: splitTopics,
+          home: FULL_HOME,
+          navhome: NAV_HOME,
         });
       });
   });
@@ -58,14 +62,16 @@ module.exports = function(app) {
         res.render('topic/form', {
           breadcrumbs: [{
               text: 'Choices',
-              href: HOME,
+              href: FULL_HOME,
             }, {
               text: topic.attrs.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.attrs.class,
             },
           ],
           //_csrf: req.csrfToken(),
           topic: topic.attrs,
-          location: HOME + '/add',
+          location: FULL_HOME + '/add',
+          home: FULL_HOME,
+          navhome: NAV_HOME,
         });
       });
     } else {
@@ -79,14 +85,16 @@ module.exports = function(app) {
       res.render('topic/form', {
         breadcrumbs: [{
             text: 'Choices',
-            href: HOME,
+            href: FULL_HOME,
           }, {
             text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.class,
           },
         ],
         //_csrf: req.csrfToken(),
         topic: topic,
-        location: HOME + '/add',
+        location: FULL_HOME + '/add',
+        home: FULL_HOME,
+        navhome: NAV_HOME,
       });
     }
   });
@@ -111,7 +119,7 @@ module.exports = function(app) {
 
     (new Topic(topic)).save(function(err) {
       if (err) return next(err);
-      res.redirect(HOME);
+      res.redirect(FULL_HOME);
     });
   });
 
@@ -128,13 +136,13 @@ module.exports = function(app) {
 
       topic.update(function(err) {
         if (err) return next(err);
-        res.redirect(HOME);
+        res.redirect(FULL_HOME);
       });
     });
 
     // Topic.destroy(req.params.id, function(err) {
     //   if (err) return next(err);
-    //   res.redirect(HOME);
+    //   res.redirect(FULL_HOME);
     // });
   });
 };

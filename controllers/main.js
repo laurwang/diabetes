@@ -27,6 +27,7 @@ module.exports = function(app) {
   // Launcher -----------------
   app.get(HOME, function(req, res, next) {
     res.render('index', {
+      navhome: (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME,
     });
   });
 

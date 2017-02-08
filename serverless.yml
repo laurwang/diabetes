@@ -55,7 +55,6 @@ functions:
       - http:
          path: ${self:custom.active.home}/health
          method: get
-         private: false
       - http:
          path: ${self:custom.active.home}/topics
          method: get
@@ -63,24 +62,24 @@ functions:
          path: ${self:custom.active.home}/record
          method: get
       - http:
-         path: ${self:custom.active.home}/topics/add
+         path: ${self:custom.active.home}/topics/add/{class}
          method: get
       - http:
          path: ${self:custom.active.home}/topics/add
          method: post
       - http:
-         path: ${self:custom.active.home}/topics/onoff
+         path: ${self:custom.active.home}/topics/onoff/{id}
          method: get
       - http:
-         path: ${self:custom.active.home}/record/add
+         path: ${self:custom.active.home}/record/add/{class}
          method: get
       - http:
          path: ${self:custom.active.home}/record/update
          method: post
       - http:
-         path: ${self:custom.active.home}/record/edit
+         path: ${self:custom.active.home}/record/edit/{class}/{date}/{id}
          method: get
       - http:
-         path: ${self:custom.active.home}/record/delete
+         path: ${self:custom.active.home}/record/delete/{date}/{id}
          method: get
     #role: ${self:custom.config.lambdaBasicExecutionRole} #this will override the provider-level role, with v1.2

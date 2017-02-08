@@ -53,7 +53,7 @@ block content
           br
       .row
         .col-sm-2.col-sm-offset-2
-          a.btn(href="/record") Cancel
+          a.btn(href='#{home}') Cancel
           &nbsp;
           input.btn.btn-primary(type='submit', value=buttonText)
     script.
@@ -63,7 +63,7 @@ block content
         + "<option value=''>Select the food."
         + "</option>";
         topicFoods.forEach(function(topic) {
-          temp = temp + "<option value='" + (topic.type + "|" + topic.id + "|" + topic.calories) + "'>" + topic.name + " (" + topic.type + ")</option>";
+          temp = temp + "<option value='" + (topic.type + "|" + topic.id + "|" + topic.calories) + "'>" + topic.name + " (" + topic.type + " - one " + topic.unit + ")</option>";
         });
         temp = temp + "</select></div>"
         + "<div class='col-sm-2'><input class='form-control' type='text' name='unitsEaten[]'></input></div>";
