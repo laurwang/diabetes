@@ -5,13 +5,13 @@ const HOME = '/' + (process.env.HOME ? process.env.HOME : '');
 
 module.exports = function(app) {
 
-  app.get(HOME + '/login', function(req, res, next) {
-    res.redirect('/');
-  });
+  // app.get(HOME + '/login', function(req, res, next) {
+  //   res.redirect(HOME);
+  // });
 
-  app.get(HOME + '/logout', function(req, res, next) {
-    res.redirect('/');
-  });
+  // app.get(HOME + '/logout', function(req, res, next) {
+  //   res.redirect(HOME);
+  // });
 
   /**
    * Route hit by the ELB to determine instance state.

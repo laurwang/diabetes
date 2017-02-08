@@ -5,7 +5,7 @@ const diff = require('object-diff');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'topics';
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + APP_NAME;
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
 
 const DEFAULT = [
   'name',

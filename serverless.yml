@@ -5,7 +5,7 @@ provider:
   runtime: nodejs4.3
   stage: dev
   region: us-east-1
-  role: ${self:custom.active.lambdaBasicExecutionRole} #field renamed from iamArnRole in v1.2
+  role: ${self:custom.active.lambdaFullExecutionRole} #field renamed from iamArnRole in v1.2
   deploymentBucket: lauren-serverless-deploy
   apiKeys:
   - ${opt:stage, self:provider.stage}-key
@@ -39,7 +39,7 @@ functions:
   # cannot refer to function name: https://github.com/serverless/serverless/issues/2405
   manager:
     environment:
-      HOME: manager
+      HOME: ${self:custom.active.home}
       TOPICS: ${self:custom.active.topicsDB}
       RECORDS: ${self:custom.active.recordsDB}
     # name: ${self:service}-${opt:stage, self:provider.stage}-manager <---default from serverless
@@ -49,7 +49,38 @@ functions:
     memory: 1024
     events:
       - http:
-         path: manager
+         path: ${self:custom.active.home}
          method: get
          private: false
+      - http:
+         path: ${self:custom.active.home}/health
+         method: get
+         private: false
+      - http:
+         path: ${self:custom.active.home}/topics
+         method: get
+      - http:
+         path: ${self:custom.active.home}/record
+         method: get
+      - http:
+         path: ${self:custom.active.home}/topics/add
+         method: get
+      - http:
+         path: ${self:custom.active.home}/topics/add
+         method: post
+      - http:
+         path: ${self:custom.active.home}/topics/onoff
+         method: get
+      - http:
+         path: ${self:custom.active.home}/record/add
+         method: get
+      - http:
+         path: ${self:custom.active.home}/record/update
+         method: post
+      - http:
+         path: ${self:custom.active.home}/record/edit
+         method: get
+      - http:
+         path: ${self:custom.active.home}/record/delete
+         method: get
     #role: ${self:custom.config.lambdaBasicExecutionRole} #this will override the provider-level role, with v1.2

@@ -8,7 +8,7 @@ const Action = require('../lib/action');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + APP_NAME;
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
 
 const MEALS = [
   {

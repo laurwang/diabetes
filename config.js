@@ -23,6 +23,8 @@ function configure(stage, service) {
     topicsDB: service + '-topics',
     recordsDB: service + '-records',
     lambdaBasicExecutionRole: 'arn:aws:iam::' + process.env.ACCOUNT + ':role/LambdaBasicExecution',
+    lambdaFullExecutionRole: 'arn:aws:iam::' + process.env.ACCOUNT + ':role/LambdaFullExecution',
+    home: 'manager',
   }
   if (stage.startsWith('prod')) {
     config.topicsDB += '-prod';

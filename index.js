@@ -9,10 +9,8 @@ const bodyParser = require('body-parser');
 //const cookieParser = require('cookie-parser');
 //const compression = require('compression');
 //const csrf = require('csurf');
-//const controllers = require('./controllers');
+const controllers = require('./controllers');
 const app = express();
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '');
-console.log(HOME);
 
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/views');
@@ -40,17 +38,7 @@ app.use('/node_modules', express.static(__dirname + '/node_modules'));
 
 // Init all the controllers BEFORE error handling; somehow this doesn't seem to be hapening correctly on AWS
 console.log('Before controller require', Date.now() - start, 'ms have elapsed');
-//controllers(app);
-
-app.get(HOME + '/health', function(req, res) {
-	return res.json({
-	  ready: true,
-	});
-});
-app.get(HOME, function(req, res, next) {
-	res.render('index', {
-	});
-});
+controllers(app);
 console.log('After controller require', Date.now() - start, 'ms have elapsed');
 
 // Error handling response
