@@ -1,0 +1,55 @@
+service: diabetes
+
+provider:
+  name: aws
+  runtime: nodejs4.3
+  stage: dev
+  region: us-east-1
+  role: ${self:custom.active.lambdaBasicExecutionRole} #field renamed from iamArnRole in v1.2
+  deploymentBucket: lauren-serverless-deploy
+  apiKeys:
+  - ${opt:stage, self:provider.stage}-key
+  environment:
+    SERVERLESS_REGION: ${opt:region, self:provider.region}
+    SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
+    SERVERLESS_PROJECT: ${self:service}
+
+custom: 
+  config: 
+    prod: ${file(./config.js):configureDiabetes_Production} #can return either a json or a yml
+    staging: ${file(./config.js):configureDiabetes_Staging}
+  active: ${self:custom.config.${opt:stage, self:provider.stage}, self:custom.config.staging}
+
+package:
+  include:
+     - lib
+     - node_modules
+     - controllers
+     - public
+     - views
+     - index.js
+  exclude:
+     - package.json
+     - .gitignore
+     - config.js
+     - README.md
+#  artifact: my-service-code.zip
+
+functions:
+  # cannot refer to function name: https://github.com/serverless/serverless/issues/2405
+  manager:
+    environment:
+      HOME: manager
+      TOPICS: ${self:custom.active.topicsDB}
+      RECORDS: ${self:custom.active.recordsDB}
+    # name: ${self:service}-${opt:stage, self:provider.stage}-manager <---default from serverless
+    description: 'diabetes management web app'
+    handler: main.handler
+    timeout: 300
+    memory: 1024
+    events:
+      - http:
+         path: manager
+         method: get
+         private: false
+    #role: ${self:custom.config.lambdaBasicExecutionRole} #this will override the provider-level role, with v1.2

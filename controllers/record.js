@@ -8,6 +8,7 @@ const Action = require('../lib/action');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + APP_NAME;
 
 const MEALS = [
   {
@@ -116,7 +117,7 @@ function appendMealInfo(info, eatenThings, amounts){
 
 module.exports = function(app) {
 
-  app.get('/record', function(req, res, next) {
+  app.get(HOME, function(req, res, next) {
     let dateToGet;
     if (req.query.date) {
       dateToGet = req.query.date;
@@ -154,7 +155,7 @@ module.exports = function(app) {
         res.render('record/index', {
           breadcrumbs: [{
               text: 'Records',
-              href: '/record',
+              href: HOME,//TODO might need stage
             },
           ],
           //_csrf: req.csrfToken(),
@@ -166,7 +167,7 @@ module.exports = function(app) {
       });
   });
 
-  app.get('/record/add/:class', function(req, res, next) {
+  app.get(HOME + '/add/:class', function(req, res, next) {
     Topic
       .scan()
       .loadAll()
@@ -177,7 +178,7 @@ module.exports = function(app) {
           //_csrf: req.csrfToken(),
           breadcrumbs: [{
               text: 'Records',
-              href: '/record',
+              href: HOME,//TODO might need stage
             }, {
               text: 'Add a ' + req.params.class,
             },
@@ -190,7 +191,7 @@ module.exports = function(app) {
           },
           topics: cleanedTopics(topics),
 
-          location: '/record/update',
+          location: HOME + '/update',//TODO might need stage
           buttonText: 'Add',
           typeText: typeForRecordClass(req.params.class),
           app: APP_NAME,
@@ -198,7 +199,7 @@ module.exports = function(app) {
       });
   });
 
-  app.post('/record/update', function(req, res, next) {
+  app.post(HOME + '/update', function(req, res, next) {
     //console.log('req received ', req.body);
 
     let info = {
@@ -235,7 +236,7 @@ module.exports = function(app) {
 
         action.update(function(err) {
           if (err) return next(err);
-          res.redirect('/record');
+          res.redirect(HOME);
         });
       });
     } else {
@@ -246,12 +247,12 @@ module.exports = function(app) {
 
       action.save(function(err) {
         if (err) return next(err);
-        res.redirect('/record');
+        res.redirect(HOME);
       });
     }
   });
 
-  app.get('/record/edit/:class/:date/:id', function(req, res, next) {
+  app.get(HOME + '/edit/:class/:date/:id', function(req, res, next) {
 
     let actionToPassIn;
     let topicsToPassIn;
@@ -311,7 +312,7 @@ module.exports = function(app) {
         //_csrf: req.csrfToken(),
         breadcrumbs: [{
             text: 'Records',
-            href: '/record',
+            href: HOME,//TODO might need stage
           }, {
             text: 'Edit a ' + req.params.class,
           },
@@ -319,7 +320,7 @@ module.exports = function(app) {
         action: actionToPassIn,
         topics: topicsToPassIn,
 
-        location: '/record/update',
+        location: HOME + '/update',//TODO might need stage
         buttonText: 'Update',
         typeText: typeForRecordClass(req.params.class),
         app: APP_NAME,
@@ -327,10 +328,10 @@ module.exports = function(app) {
     });
   });
 
-  app.get('/record/delete/:date/:id', function(req, res, next) {
+  app.get(HOME + '/delete/:date/:id', function(req, res, next) {
     Action.destroy(req.params.date, req.params.id, function(err) {
       if (err) return next(err);
-      res.redirect('/record');
+      res.redirect(HOME);
     });
   });
 };

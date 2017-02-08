@@ -5,6 +5,7 @@ const diff = require('object-diff');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'topics';
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + APP_NAME;
 
 const DEFAULT = [
   'name',
@@ -14,7 +15,7 @@ const DEFAULT = [
 ];
 
 module.exports = function(app) {
-  app.get('/topics', function(req, res, next) {
+  app.get(HOME, function(req, res, next) {
     Topic
       .scan()
       .loadAll()
@@ -44,7 +45,7 @@ module.exports = function(app) {
       });
   });
 
-  app.get('/topics/add/:class', function(req, res, next) {
+  app.get(HOME + '/add/:class', function(req, res, next) {
     //console.log('received req query', req.query);
     //initialize so that re-usable form (both add and copy) doesn't freak out
 
@@ -57,14 +58,14 @@ module.exports = function(app) {
         res.render('topic/form', {
           breadcrumbs: [{
               text: 'Choices',
-              href: '/topics',
+              href: HOME,
             }, {
               text: topic.attrs.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.attrs.class,
             },
           ],
           //_csrf: req.csrfToken(),
           topic: topic.attrs,
-          location: '/topics/add',
+          location: HOME + '/add',
         });
       });
     } else {
@@ -78,19 +79,19 @@ module.exports = function(app) {
       res.render('topic/form', {
         breadcrumbs: [{
             text: 'Choices',
-            href: '/topics',
+            href: HOME,
           }, {
             text: topic.class.toLowerCase() === 'insulin' ? 'Add an Insulin' : 'Add a ' + topic.class,
           },
         ],
         //_csrf: req.csrfToken(),
         topic: topic,
-        location: '/topics/add',
+        location: HOME + '/add',
       });
     }
   });
 
-  app.post('/topics/add', function(req, res, next) {
+  app.post(HOME + '/add', function(req, res, next) {
     //console.log('req.body', req.body);
     let topic = {
       name: req.body.name,
@@ -110,11 +111,11 @@ module.exports = function(app) {
 
     (new Topic(topic)).save(function(err) {
       if (err) return next(err);
-      res.redirect('/topics');
+      res.redirect(HOME);
     });
   });
 
-  app.get('/topics/onoff/:id', function(req, res, next) {
+  app.get(HOME + '/onoff/:id', function(req, res, next) {
     Topic.get(req.params.id, function(err, topic) {
       if (err) return next(err);
       if (!topic || !topic.attrs) return next(new Error('No topic with attributes found.'));
@@ -127,13 +128,13 @@ module.exports = function(app) {
 
       topic.update(function(err) {
         if (err) return next(err);
-        res.redirect('/topics');
+        res.redirect(HOME);
       });
     });
 
     // Topic.destroy(req.params.id, function(err) {
     //   if (err) return next(err);
-    //   res.redirect('/topics');
+    //   res.redirect(HOME);
     // });
   });
 };

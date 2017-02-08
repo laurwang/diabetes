@@ -1,14 +1,15 @@
 'use strict';
 
 const APP_NAME = 'homepage';
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '');
 
 module.exports = function(app) {
 
-  app.get('/login', function(req, res, next) {
+  app.get(HOME + '/login', function(req, res, next) {
     res.redirect('/');
   });
 
-  app.get('/logout', function(req, res, next) {
+  app.get(HOME + '/logout', function(req, res, next) {
     res.redirect('/');
   });
 
@@ -17,14 +18,14 @@ module.exports = function(app) {
    *
    * Only a static response for now, in the future should check system state.
    */
-  app.get('/health', function(req, res) {
+  app.get(HOME + '/health', function(req, res) {
     return res.json({
       ready: true,
     });
   });
 
   // Launcher -----------------
-  app.get('/', function(req, res, next) {
+  app.get(HOME, function(req, res, next) {
     res.render('index', {
     });
   });

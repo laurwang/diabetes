@@ -6,28 +6,26 @@ const start = Date.now();
 const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const compression = require('compression');
+//const cookieParser = require('cookie-parser');
+//const compression = require('compression');
 //const csrf = require('csurf');
-const controllers = require('./controllers');
+//const controllers = require('./controllers');
 const app = express();
-
-const server = http.createServer(app).listen(8079);
-
-server.on('error', function(e) {
-  console.error('server error', e);
-});
-
-console.log('Listening', Date.now() - start, 'ms have elapsed');
+const HOME = '/' + (process.env.HOME ? process.env.HOME : '');
+console.log(HOME);
 
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/views');
 
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(compression());
+//COMMENT OUT for non-lambda
+const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
+app.use(awsServerlessExpressMiddleware.eventContext());
+
+//app.use(compression());
 app.use('/public', express.static(__dirname + '/public'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
 
@@ -40,9 +38,19 @@ app.use('/node_modules', express.static(__dirname + '/node_modules'));
 //   csrf({ cookie: true })(req, res, next);
 // });
 
-// Init all the controllers
+// Init all the controllers BEFORE error handling; somehow this doesn't seem to be hapening correctly on AWS
 console.log('Before controller require', Date.now() - start, 'ms have elapsed');
-controllers(app);
+//controllers(app);
+
+app.get(HOME + '/health', function(req, res) {
+	return res.json({
+	  ready: true,
+	});
+});
+app.get(HOME, function(req, res, next) {
+	res.render('index', {
+	});
+});
 console.log('After controller require', Date.now() - start, 'ms have elapsed');
 
 // Error handling response
@@ -58,3 +66,13 @@ app.use(function(err, req, res, next) {
 app.use(function(req, res, next) {
   res.status(404).render('errors/404');
 });
+
+//UNCOMMENT out for non-lambda only
+// const server = http.createServer(app).listen(8079);
+// server.on('error', function(e) {
+//   console.error('server error', e);
+// });
+// console.log('Listening', Date.now() - start, 'ms have elapsed');
+
+//COMMENT OUT for non-lamba only
+module.exports = app;
