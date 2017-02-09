@@ -5,12 +5,12 @@
     .nav.navbar-nav
       a(href='#{navhome}')
         img#logo(
-          src='/public/imgs/eating.jpg',
+          src='http://s3.amazonaws.com/lauren-public/public/imgs/eating.jpg',
           alt='Diabetes Logs',
           )
       - if (breadcrumbs)
         - each crumb in breadcrumbs
-          img(src='/public/imgs/breadcrumb-next.svg').crumb-img
+          img(src='http://s3.amazonaws.com/lauren-public/public/imgs/breadcrumb-next.svg').crumb-img
           .crumb
             - if (crumb.href)
               a(href= crumb.href)
