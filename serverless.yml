@@ -29,7 +29,7 @@ package:
      - index.js
   exclude:
      - package.json
-     - public
+     - public/*
      - .gitignore
      - config.js
      - timezone.json
