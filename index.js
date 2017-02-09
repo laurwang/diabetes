@@ -1,6 +1,7 @@
 'use strict';
 
 const start = Date.now();
+const AWS_PUBLIC = 'http://s3.amazonaws.com/lauren-public';
 
 // External modules
 const http = require('http');
@@ -25,6 +26,7 @@ app.use(awsServerlessExpressMiddleware.eventContext());
 
 //app.use(compression());
 app.use('/public', express.static(__dirname + '/public'));
+//app.use('/public', express.static(AWS_PUBLIC + '/public'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
 
 // app.use(function csrfProxy(req, res, next) {

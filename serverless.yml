@@ -25,11 +25,11 @@ package:
      - lib
      - node_modules
      - controllers
-     - public
      - views
      - index.js
   exclude:
      - package.json
+     - public
      - .gitignore
      - config.js
      - timezone.json
@@ -40,7 +40,7 @@ functions:
   # cannot refer to function name: https://github.com/serverless/serverless/issues/2405
   manager:
     environment:
-      HOME: ${self:custom.active.home}
+      AWS_HOME: ${self:custom.active.home}
       TOPICS: ${self:custom.active.topicsDB}
       RECORDS: ${self:custom.active.recordsDB}
       OFFSET: ${self:custom.active.zoneOffset}

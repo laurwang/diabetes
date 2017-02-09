@@ -1,7 +1,8 @@
 'use strict';
 
 const APP_NAME = 'homepage';
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '');
+const HOME = '/' + (process.env.AWS_HOME || '');
+console.log('home ', HOME);
 
 module.exports = function(app) {
 
@@ -27,6 +28,7 @@ module.exports = function(app) {
   // Launcher -----------------
   app.get(HOME, function(req, res, next) {
     res.render('index', {
+      home: (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + (process.env.AWS_HOME ? '/' + process.env.AWS_HOME : ''),
       navhome: (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME,
     });
   });

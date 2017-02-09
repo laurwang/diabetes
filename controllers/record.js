@@ -8,9 +8,9 @@ const Action = require('../lib/action');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
-const HOME = '/' + (process.env.HOME || '') + '/' + APP_NAME;
+const HOME = (process.env.AWS_HOME ? '/' + process.env.AWS_HOME : '') + '/' + APP_NAME;
 const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
-const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME || '');
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.AWS_HOME || '');
 const OFFSET = process.env.OFFSET ? parseInt(process.env.OFFSET, 10) : 0;
 // const ADJ_DISPLAY = 24 + OFFSET;
 const ADJ_ENTRY = -OFFSET * 60 * 60 * 1000;
