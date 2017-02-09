@@ -12,7 +12,7 @@ const HOME = '/' + (process.env.HOME || '') + '/' + APP_NAME;
 const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
 const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME || '');
 const OFFSET = process.env.OFFSET ? parseInt(process.env.OFFSET, 10) : 0;
-const ADJ_DISPLAY = 24 + OFFSET;
+// const ADJ_DISPLAY = 24 + OFFSET;
 const ADJ_ENTRY = -OFFSET * 60 * 60 * 1000;
 
 const MEALS = [
@@ -43,19 +43,20 @@ const MEALS = [
 function getStartOfDayMilliseconds(date){
   let temp = date.split('-');
   let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));//start of the date for server
-  return time.getTime() + ADJ_ENTRY;//start of the day for user
+  return time.getTime();//start of day for someone, don't care who, as long as is consistent for the day, in terms of generating a time field for sorting
+          // + ADJ_ENTRY;//start of the day for user
 }
 
-function getTimeOfDay(millis) {
-  let time = new Date(millis);//expressed as hours and minutes for the server
-  let result = {};
-  result.minute = time.getMinutes();
-  result.hour = (ADJ_DISPLAY + time.getHours()) % 24;//adjust hour for the user
-  if (result.minute < 10) {
-    result.minute = '0' + result.minute;
-  }
-  return result;
-}
+// function getTimeOfDay(millis) {
+//   let time = new Date(millis);//expressed as hours and minutes for the server
+//   let result = {};
+//   result.minute = time.getMinutes();
+//   result.hour = (ADJ_DISPLAY + time.getHours()) % 24;//adjust hour for the user
+//   if (result.minute < 10) {
+//     result.minute = '0' + result.minute;
+//   }
+//   return result;
+// }
 
 //to convert milliseconds to time of day for a given date, basically same thing as the date getters (without rounding checks)
 //get weirdness based on what is the utc of the server's start of day, as this depends where the server is, so the hours get messed up
@@ -69,6 +70,13 @@ function getTimeOfDay(millis) {
 //   }
 //   return result;
 // }
+
+function makeNice(timePart){
+  if (!timePart) {
+    return '00';
+  }
+  return (timePart < 10 ?  '0' : '') + timePart;
+}
 
 //split up topics and weed out one's not to be displayed
 //TODO check these are dynamodb-formatted topics
@@ -132,7 +140,9 @@ module.exports = function(app) {
       dateToGet = req.query.date;
     } else {
       //need to adjust server time back to user time to get today's date
-      //NB jetzt is completely bogus for time purposes--it's just to get the date correct for the user
+      //NB jetzt is completely bogus for time purposes--it's just to get the date roughly correct for the user
+      //during the 7/8 hour gap a couple of times a year, may end up suggesting the wrong date to display for an hour,
+      //but so what?  it's manually changeable anyway.
       let jetzt = new Date((new Date()).getTime() - ADJ_ENTRY);
       dateToGet = jetzt.getDate() + '';
       if (dateToGet.length === 1){
@@ -154,10 +164,9 @@ module.exports = function(app) {
         if (err) return next(err);
 
         let unsorted = actions.Items.map(function(action) {
-          if (action.attrs && action.attrs.time) {
-            let time = getTimeOfDay(action.attrs.time);
-            action.attrs.minute = time.minute;
-            action.attrs.hour = time.hour;
+          if (action.attrs) {
+            action.attrs.minute = makeNice(action.attrs.minute);
+            action.attrs.hour = makeNice(action.attrs.hour);
           }
 
           return action.attrs;
@@ -220,6 +229,8 @@ module.exports = function(app) {
     let info = {
       class: req.body.classText,
       quantity: req.body.quantity,
+      hour: parseInt(req.body.hour, 10),
+      minute: parseInt(req.body.minute, 10),
     };
 
     let recordType = typeForRecordClass(info.class);
@@ -234,7 +245,7 @@ module.exports = function(app) {
 
     if (req.body.id) {
       info.date = req.body.originalDate;
-      info.time = getStartOfDayMilliseconds(info.date) + (req.body.hour * 3600 + req.body.minute * 60) * 1000;
+      info.time = getStartOfDayMilliseconds(info.date) + (info.hour * 3600 + info.minute * 60) * 1000;
       info.id = req.body.id;
 
       Action.get(info.date, info.id, function(err, action) {
@@ -256,7 +267,7 @@ module.exports = function(app) {
       });
     } else {
       info.date = req.body.date;
-      info.time = getStartOfDayMilliseconds(info.date) + (req.body.hour * 3600 + req.body.minute * 60) * 1000;
+      info.time = getStartOfDayMilliseconds(info.date) + (info.hour * 3600 + info.minute * 60) * 1000;
 
       let action = new Action(info);
 
@@ -294,9 +305,8 @@ module.exports = function(app) {
 
           actionToPassIn = action.attrs;
           actionToPassIn.class = req.params.class;
-          let time = getTimeOfDay(actionToPassIn.time);
-          actionToPassIn.minute = time.minute;
-          actionToPassIn.hour = time.hour;
+          actionToPassIn.minute = makeNice(actionToPassIn.minute);
+          actionToPassIn.hour = makeNice(actionToPassIn.hour);
 
           if (actionToPassIn.class.toLowerCase() === 'meal') {
             actionToPassIn.foods = actionToPassIn.mealFoods.map(function(food){
