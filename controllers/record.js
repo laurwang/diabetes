@@ -8,9 +8,12 @@ const Action = require('../lib/action');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'record';
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
+const HOME = '/' + (process.env.HOME || '') + '/' + APP_NAME;
 const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
-const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME ? process.env.HOME : '');
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME || '');
+const OFFSET = process.env.OFFSET ? parseInt(process.env.OFFSET, 10) : 0;
+const ADJ_DISPLAY = 24 + OFFSET;
+const ADJ_ENTRY = -OFFSET * 60 * 60 * 1000;
 
 const MEALS = [
   {
@@ -36,30 +39,34 @@ const MEALS = [
 ];
 
 //to convert to (UTC) milliseconds at local start of day
-//TODO check date is formatted correctly
+//NB the aws servers for us-east-1 appear to be on utc (so the offset is going to be messed up for older data with a hard-coded adjust of -8)
 function getStartOfDayMilliseconds(date){
   let temp = date.split('-');
-  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));
-  return time.getTime();
+  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));//start of the date for server
+  return time.getTime() + ADJ_ENTRY;//start of the day for user
 }
 
 function getTimeOfDay(millis) {
-  let time = new Date(millis);
+  let time = new Date(millis);//expressed as hours and minutes for the server
   let result = {};
   result.minute = time.getMinutes();
-  result.hour = time.getHours();
+  result.hour = (ADJ_DISPLAY + time.getHours()) % 24;//adjust hour for the user
   if (result.minute < 10) {
     result.minute = '0' + result.minute;
   }
   return result;
 }
 
-//to convert milliseconds to time of day for a given date
+//to convert milliseconds to time of day for a given date, basically same thing as the date getters (without rounding checks)
+//get weirdness based on what is the utc of the server's start of day, as this depends where the server is, so the hours get messed up
 // function getTimeOfDay(time, date){
 //   let min = (time - getStartOfDayMilliseconds(date)) / 60000;
 //   let result = {};
 //   result.minute = min % 60;
 //   result.hour = (min - result.minute) / 60;
+//   if (result.minute < 10) {
+//     result.minute = '0' + result.minute;
+//   }
 //   return result;
 // }
 
@@ -124,7 +131,9 @@ module.exports = function(app) {
     if (req.query.date) {
       dateToGet = req.query.date;
     } else {
-      let jetzt = new Date();
+      //need to adjust server time back to user time to get today's date
+      //NB jetzt is completely bogus for time purposes--it's just to get the date correct for the user
+      let jetzt = new Date((new Date()).getTime() - ADJ_ENTRY);
       dateToGet = jetzt.getDate() + '';
       if (dateToGet.length === 1){
         dateToGet = '0' + dateToGet;

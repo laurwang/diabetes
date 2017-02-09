@@ -3,7 +3,7 @@ service: diabetes
 provider:
   name: aws
   runtime: nodejs4.3
-  stage: dev
+  stage: staging
   region: us-east-1
   role: ${self:custom.active.lambdaFullExecutionRole} #field renamed from iamArnRole in v1.2
   deploymentBucket: lauren-serverless-deploy
@@ -16,9 +16,9 @@ provider:
 
 custom: 
   config: 
-    prod: ${file(./config.js):configureDiabetes_Production} #can return either a json or a yml
+    prod: ${file(./config.js):configureDiabetes_Prod} #can return either a json or a yml
     staging: ${file(./config.js):configureDiabetes_Staging}
-  active: ${self:custom.config.${opt:stage, self:provider.stage}, self:custom.config.staging}
+  active: ${self:custom.config.${opt:stage, self:provider.stage}, self:custom.config.prod}
 
 package:
   include:
@@ -32,6 +32,7 @@ package:
      - package.json
      - .gitignore
      - config.js
+     - timezone.json
      - README.md
 #  artifact: my-service-code.zip
 
@@ -42,10 +43,11 @@ functions:
       HOME: ${self:custom.active.home}
       TOPICS: ${self:custom.active.topicsDB}
       RECORDS: ${self:custom.active.recordsDB}
+      OFFSET: ${self:custom.active.zoneOffset}
     # name: ${self:service}-${opt:stage, self:provider.stage}-manager <---default from serverless
     description: 'diabetes management web app'
     handler: main.handler
-    timeout: 300
+    timeout: 30
     memory: 1024
     events:
       - http:

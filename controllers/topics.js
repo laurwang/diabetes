@@ -5,9 +5,9 @@ const diff = require('object-diff');
 const Topic = require('../lib/topic');
 
 const APP_NAME = 'topics';
-const HOME = '/' + (process.env.HOME ? process.env.HOME : '') + '/' + APP_NAME;
+const HOME = '/' + (process.env.HOME || '') + '/' + APP_NAME;
 const FULL_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + HOME;
-const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME ? process.env.HOME : '');
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.HOME || '');
 
 const DEFAULT = [
   'name',

@@ -1,5 +1,7 @@
 'use strict';
 
+const timezone = require('./timezone.json');
+
 // const syncreq = require('sync-request');//NB only use this during deployment serverless stack
 
 // function configureFromService(stage, service) {
@@ -24,11 +26,20 @@ function configure(stage, service) {
     recordsDB: service + '-records',
     lambdaBasicExecutionRole: 'arn:aws:iam::' + process.env.ACCOUNT + ':role/LambdaBasicExecution',
     lambdaFullExecutionRole: 'arn:aws:iam::' + process.env.ACCOUNT + ':role/LambdaFullExecution',
+    zoneOffset: timezone[process.env.TZ] || timezone.default,//yaml cannot process the region as a property
     home: 'manager',
   }
-  if (stage.startsWith('prod')) {
-    config.topicsDB += '-prod';
-    config.recordsDB +='-prod';
+
+  if (stage === 'prod') {
+    config.topicsDB += '-';
+    config.recordsDB += '-';
+    if (process.env.PRIMARY) {
+      config.topicsDB += process.env.PRIMARY;
+      config.recordsDB += process.env.PRIMARY;
+    } else {
+      config.topicsDB += 'prod';
+      config.recordsDB += 'prod';
+    }
   }
 
   return config;
@@ -36,5 +47,5 @@ function configure(stage, service) {
 
 module.exports = {
   configureDiabetes_Staging: configure.bind(null, 'staging', 'diabetes'),
-  configureDiabetes_Production: configure.bind(null, 'production', 'diabetes'),
+  configureDiabetes_Prod: configure.bind(null, 'prod', 'diabetes'),
 };
