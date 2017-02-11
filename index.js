@@ -1,6 +1,7 @@
 'use strict';
 
 const start = Date.now();
+const NAV_HOME = (process.env.SERVERLESS_STAGE ? '/' + process.env.SERVERLESS_STAGE : '') + '/' + (process.env.AWS_HOME || '');
 
 // External modules
 const http = require('http');
@@ -44,11 +45,11 @@ app.use(function(err, req, res, next) {
   // Custom CSRF error messaging
   //if (err.code === 'EBADCSRFTOKEN') err.message = 'Invalid CSRF token, please go back and try your request again.';
 
-  res.render('errors/error', { disableNav: true, error: err });
+  res.render('errors/error', { disableNav: true, error: err, navhome: NAV_HOME });
 });
 
 app.use(function(req, res, next) {
-  res.status(404).render('errors/404');
+  res.status(404).render('errors/404', {navhome: NAV_HOME});
 });
 
 //TO RUN LOCALLY uncomment following five lines

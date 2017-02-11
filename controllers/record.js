@@ -116,6 +116,7 @@ function appendMealInfo(info, eatenThings, amounts){
     protein: 0,
     starch: 0,
     veg: 0,
+    fruit: 0,
     treat: 0,
   };
   info.mealFoods = [];
