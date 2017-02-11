@@ -42,7 +42,8 @@ const MEALS = [
 //NB the aws servers for us-east-1 appear to be on utc (so the offset is going to be messed up for older data with a hard-coded adjust of -8)
 function getStartOfDayMilliseconds(date){
   let temp = date.split('-');
-  let time = new Date(parseInt(temp[2], 10), parseInt(temp[1], 10) - 1, parseInt(temp[0], 10));//start of the date for server
+  let time = new Date(parseInt(temp[0], 10), parseInt(temp[1], 10) - 1, parseInt(temp[2], 10));//start of the date for server
+  console.log('calculated start of day ', date, time);
   return time.getTime();//start of day for someone, don't care who, as long as is consistent for the day, in terms of generating a time field for sorting
           // + ADJ_ENTRY;//start of the day for user
 }
@@ -151,9 +152,9 @@ module.exports = function(app) {
       }
       let temp = jetzt.getMonth() + 1;
       if(temp < 10){
-        dateToGet += ('-0' + temp + '-' + (1900 + jetzt.getYear()));
+        dateToGet = (1900 + jetzt.getYear()) + '-0' + temp + '-' + dateToGet;
       } else {
-        dateToGet += ('-' + temp + '-' + (1900 + jetzt.getYear()));
+        dateToGet = (1900 + jetzt.getYear()) + '-' + temp + '-' + dateToGet;
       }
       //console.log('getting ', dateToGet);
     }

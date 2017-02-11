@@ -21,11 +21,11 @@ block content
     hr
     .row
       .col-sm-2(style='padding-right: 0px; ')
-        h4 Date (DD-MM-YYYY)
+        h4 Date
       .col-sm-4(style='padding-left: 0px; ')
         form(onSubmit='getRecordsForDate();')
           .col-sm-6
-            input.form-control(type='text', name='date', id='date', value=recordsDate)
+            input.form-control(type='date', name='date', id='date', value=recordsDate)
           .col-sm-3
             input.btn.btn-primary(type='submit', value='Change Date')
     table#activity(style='width:100%; ')
